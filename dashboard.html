@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow - Dashboard</title>
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./globals.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            card: 'var(--card)',
+            'card-border': 'var(--card-border)',
+            accent: 'var(--accent)',
+            'accent-hover': 'var(--accent-hover)',
+            sidebar: 'var(--sidebar)',
+            'sidebar-border': 'var(--sidebar-border)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-foreground transition-all-custom">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    
+    <!-- Sidebar Container -->
+    <div id="sidebar-container" class="shrink-0 z-40"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-x-hidden p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
+      
+      <!-- Welcome Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 animate-fade-in-up">
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+            <span data-i18n="dashboard.welcome">Welcome back</span>, <span id="user-display-name">User</span>! <span class="animate-bounce">👋</span>
+          </h1>
+          <p data-i18n="dashboard.subtitle" class="text-sm text-foreground/60 font-medium mt-1">
+            Here is your progress and goals for today.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Calendar Badge -->
+          <div class="flex items-center gap-2 bg-card border border-card-border px-4 py-2 rounded-xl text-xs font-semibold shadow-xs">
+            <i data-lucide="calendar-days" class="w-4 h-4 text-accent"></i>
+            <span class="text-foreground/80" id="header-date">30 June 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid of Key Metrics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in-up" style="animation-delay: 0.08s;">
+        
+        <!-- Today's Progress -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs hover:shadow-md transition-all-custom flex flex-col justify-between">
+          <div>
+            <span data-i18n="dashboard.todayProgress" class="text-xs font-bold text-foreground/40 uppercase tracking-wider">Today's Progress</span>
+            <div class="flex items-baseline gap-1 mt-2">
+              <span class="text-3xl font-extrabold text-foreground" id="metric-progress-value">0</span>
+              <span class="text-foreground/45 text-sm font-semibold">/ <span id="metric-progress-total">0</span> <span data-i18n="dashboard.habits">habits</span></span>
+            </div>
+          </div>
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+              <span class="text-accent"><span id="metric-progress-percent">0</span>% <span data-i18n="dashboard.completed">completed</span></span>
+            </div>
+            <div class="w-full bg-card-border/40 h-2 rounded-full overflow-hidden">
+              <div id="metric-progress-bar" class="bg-accent h-full rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Streak -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs hover:shadow-md transition-all-custom flex flex-col justify-between">
+          <div>
+            <span data-i18n="dashboard.currentStreak" class="text-xs font-bold text-foreground/40 uppercase tracking-wider">Current Streak</span>
+            <div class="flex items-center gap-3 mt-2">
+              <div class="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-500 flex items-center justify-center">
+                <i data-lucide="flame" class="w-5 h-5 fill-current"></i>
+              </div>
+              <div>
+                <p class="text-3xl font-extrabold text-foreground"><span id="metric-current-streak">0</span> <span data-i18n="dashboard.days">days</span></p>
+                <p data-i18n="dashboard.keepItGoing" class="text-xs text-foreground/50 font-medium">Keep it going!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Best Streak -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs hover:shadow-md transition-all-custom flex flex-col justify-between">
+          <div>
+            <span data-i18n="dashboard.bestStreak" class="text-xs font-bold text-foreground/40 uppercase tracking-wider">Best Streak</span>
+            <div class="flex items-center gap-3 mt-2">
+              <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 flex items-center justify-center">
+                <i data-lucide="trophy" class="w-5 h-5 fill-current"></i>
+              </div>
+              <div>
+                <p class="text-3xl font-extrabold text-foreground"><span id="metric-best-streak">0</span> <span data-i18n="dashboard.days">days</span></p>
+                <p data-i18n="dashboard.absoluteRecord" class="text-xs text-foreground/50 font-medium">Your absolute record</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Total Checkmarks -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs hover:shadow-md transition-all-custom flex flex-col justify-between">
+          <div>
+            <span data-i18n="dashboard.totalCheckmarks" class="text-xs font-bold text-foreground/40 uppercase tracking-wider">Total Checkmarks</span>
+            <div class="space-y-2 mt-3">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-foreground/60 font-semibold" id="metric-month-name">June</span>
+                <span class="font-extrabold text-foreground" id="metric-month-count">0</span>
+              </div>
+              <div class="flex items-center justify-between text-sm border-t border-card-border/50 pt-2">
+                <span class="text-foreground/60 font-semibold" id="metric-year-name">2026</span>
+                <span class="font-extrabold text-foreground" id="metric-year-count">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Main Section: Goals Board -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up" style="animation-delay: 0.15s;">
+        
+        <!-- Monthly Goals -->
+        <div class="bg-card border border-card-border rounded-2xl p-6 shadow-xs flex flex-col justify-between min-h-[380px]">
+          <div>
+            <div class="flex items-center justify-between border-b border-card-border/60 pb-4 mb-4">
+              <div class="flex items-center gap-2">
+                <i data-lucide="target" class="w-5 h-5 text-accent"></i>
+                <h3 data-i18n="dashboard.monthlyGoals" class="font-bold text-lg text-foreground">Monthly Goals</h3>
+              </div>
+              <span class="text-xs font-bold bg-accent/10 text-accent px-2 py-0.5 rounded-full" id="monthly-badge-label">
+                June
+              </span>
+            </div>
+
+            <!-- Goals List -->
+            <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="monthly-goals-list">
+              <!-- Empty state or list item injections -->
+            </div>
+          </div>
+
+          <!-- Add goal form -->
+          <form id="monthly-goal-form" class="flex items-center gap-2 mt-5 border-t border-card-border/50 pt-4">
+            <input type="text" id="monthly-goal-input" data-i18n-placeholder="dashboard.addMonthlyGoal" placeholder="Add monthly goal..." required
+                   class="flex-1 bg-background border border-card-border rounded-xl px-3 py-2 text-xs outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all font-medium">
+            <button type="submit" class="p-2 bg-accent hover:bg-accent-hover text-primary-foreground rounded-xl transition-all cursor-pointer shadow-xs">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Yearly Goals -->
+        <div class="bg-card border border-card-border rounded-2xl p-6 shadow-xs flex flex-col justify-between min-h-[380px]">
+          <div>
+            <div class="flex items-center justify-between border-b border-card-border/60 pb-4 mb-4">
+              <div class="flex items-center gap-2">
+                <i data-lucide="target" class="w-5 h-5 text-violet-500"></i>
+                <h3 data-i18n="dashboard.yearlyGoals" class="font-bold text-lg text-foreground">Yearly Goals</h3>
+              </div>
+              <span class="text-xs font-bold bg-violet-500/10 text-violet-500 px-2 py-0.5 rounded-full" id="yearly-badge-label">
+                2026
+              </span>
+            </div>
+
+            <!-- Goals List -->
+            <div class="space-y-3 max-h-72 overflow-y-auto pr-1" id="yearly-goals-list">
+              <!-- Empty state or list item injections -->
+            </div>
+          </div>
+
+          <!-- Add goal form -->
+          <form id="yearly-goal-form" class="flex items-center gap-2 mt-5 border-t border-card-border/50 pt-4">
+            <input type="text" id="yearly-goal-input" data-i18n-placeholder="dashboard.addYearlyGoal" placeholder="Add yearly goal..." required
+                   class="flex-1 bg-background border border-card-border rounded-xl px-3 py-2 text-xs outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-all font-medium">
+            <button type="submit" class="p-2 bg-violet-500 hover:bg-violet-600 text-white rounded-xl transition-all cursor-pointer shadow-xs">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Lucide Icon CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Shared JS & Page JS -->
+  <script src="./shared.js"></script>
+  <script src="./dashboard.js"></script>
+</body>
+</html>

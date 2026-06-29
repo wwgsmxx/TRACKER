@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow - Calendar & Notes</title>
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./globals.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            card: 'var(--card)',
+            'card-border': 'var(--card-border)',
+            accent: 'var(--accent)',
+            'accent-hover': 'var(--accent-hover)',
+            sidebar: 'var(--sidebar)',
+            'sidebar-border': 'var(--sidebar-border)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-foreground transition-all-custom">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    
+    <!-- Sidebar Container -->
+    <div id="sidebar-container" class="shrink-0 z-40"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-x-hidden p-6 md:p-8 space-y-6 max-w-7xl mx-auto w-full">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
+        <div>
+          <h1 data-i18n="calendar.title" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Calendar & Notes</h1>
+          <p data-i18n="calendar.subtitle" class="text-xs sm:text-sm text-foreground/60 font-medium mt-1">
+            Select a day to view habit completions and write daily notes.
+          </p>
+        </div>
+      </div>
+
+      <!-- Grid Panel Layout: Calendar (Left) & Notes/Reflections (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in-up" style="animation-delay: 0.08s;">
+        
+        <!-- Left Side: Interactive Calendar -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs lg:col-span-7 space-y-4">
+          <!-- Calendar Month Header Selector -->
+          <div class="flex items-center justify-between pb-2 border-b border-card-border/50">
+            <h3 class="font-bold text-base text-foreground" id="calendar-current-month-lbl">June 2026</h3>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-cal-prev" class="p-1.5 hover:bg-card-border/40 rounded-lg text-foreground/70 transition-colors cursor-pointer border border-card-border/50">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+              </button>
+              <button id="btn-cal-next" class="p-1.5 hover:bg-card-border/40 rounded-lg text-foreground/70 transition-colors cursor-pointer border border-card-border/50">
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Calendar Grid Board -->
+          <div>
+            <!-- Weekday Titles headers -->
+            <div class="grid grid-cols-7 gap-1.5 text-center text-xs font-bold text-foreground/40 mb-3" id="calendar-weekdays-row">
+              <!-- Dynamically populated weekdays -->
+            </div>
+            
+            <!-- Calendar Grid Days -->
+            <div class="grid grid-cols-7 gap-2" id="calendar-days-grid">
+              <!-- Dynamically populated dates cells -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Journal & Checklist details -->
+        <div class="space-y-6 lg:col-span-5">
+          <!-- Daily Notes Card -->
+          <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs space-y-4 relative">
+            <div class="flex items-center justify-between border-b border-card-border/60 pb-3">
+              <div class="min-w-0">
+                <h4 class="text-[10px] font-bold text-foreground/40 uppercase tracking-wider" data-i18n="calendar.dailyNotes">Daily Notes for</h4>
+                <p class="text-sm font-bold text-foreground truncate mt-0.5" id="selected-date-display-label">30 June 2026</p>
+              </div>
+              
+              <!-- Auto-save notification indicator badge -->
+              <div id="autosave-status" class="flex items-center gap-1 text-[10px] text-emerald-500 font-bold opacity-0 transition-opacity">
+                <i data-lucide="cloud-check" class="w-3.5 h-3.5"></i>
+                <span data-i18n="calendar.saved">Saved</span>
+              </div>
+            </div>
+
+            <!-- Notes Editor Textarea -->
+            <textarea id="journal-notes-textarea" data-i18n-placeholder="calendar.notesPlaceholder" placeholder="Write your thoughts, reflections or journal entries for this day..."
+                      class="w-full h-44 bg-background/50 border border-card-border rounded-xl p-3.5 text-xs text-foreground placeholder:text-foreground/30 focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all-custom font-medium resize-none leading-relaxed"></textarea>
+          </div>
+
+          <!-- Habits Completions Checklist list -->
+          <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs space-y-4">
+            <div class="border-b border-card-border/60 pb-3 flex items-center gap-2">
+              <i data-lucide="check-square" class="w-4 h-4 text-accent"></i>
+              <h4 class="font-bold text-xs text-foreground" data-i18n="calendar.completedHabits">Completed Habits</h4>
+            </div>
+
+            <div class="space-y-2 max-h-44 overflow-y-auto pr-1" id="calendar-habits-checked-list">
+              <!-- Checked habits list will go here -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Lucide Icon CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Shared JS & Page JS -->
+  <script src="./shared.js"></script>
+  <script src="./calendar.js"></script>
+</body>
+</html>

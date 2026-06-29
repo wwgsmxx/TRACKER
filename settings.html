@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow - Settings</title>
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./globals.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            card: 'var(--card)',
+            'card-border': 'var(--card-border)',
+            accent: 'var(--accent)',
+            'accent-hover': 'var(--accent-hover)',
+            sidebar: 'var(--sidebar)',
+            'sidebar-border': 'var(--sidebar-border)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-foreground transition-all-custom">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    
+    <!-- Sidebar Container -->
+    <div id="sidebar-container" class="shrink-0 z-40"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-x-hidden p-6 md:p-8 space-y-8 max-w-3xl mx-auto w-full">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 animate-fade-in-up">
+        <div>
+          <h1 data-i18n="settings.title" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Settings</h1>
+          <p data-i18n="settings.subtitle" class="text-xs sm:text-sm text-foreground/60 font-medium mt-1">
+            Customize theme, accent colors, and manage your data.
+          </p>
+        </div>
+      </div>
+
+      <!-- Settings Cards list -->
+      <div class="space-y-6 animate-fade-in-up" style="animation-delay: 0.08s;">
+        
+        <!-- Appearance settings card -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs space-y-6">
+          <h3 class="font-bold text-base text-foreground flex items-center gap-2 border-b border-card-border/50 pb-3">
+            <i data-lucide="palette" class="w-4 h-4 text-accent"></i>
+            <span data-i18n="settings.appearance">Appearance</span>
+          </h3>
+
+          <!-- Theme switcher -->
+          <div class="space-y-2">
+            <span data-i18n="settings.theme" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Theme</span>
+            <div class="grid grid-cols-2 gap-3 max-w-sm">
+              <button id="btn-theme-dark" class="flex items-center justify-center gap-2 px-4 py-3 bg-background border border-card-border rounded-xl text-xs font-semibold hover:bg-card-border/40 transition-all-custom cursor-pointer">
+                <i data-lucide="moon" class="w-4 h-4 text-violet-400"></i>
+                <span data-i18n="settings.dark">Dark Mode</span>
+              </button>
+              <button id="btn-theme-light" class="flex items-center justify-center gap-2 px-4 py-3 bg-background border border-card-border rounded-xl text-xs font-semibold hover:bg-card-border/40 transition-all-custom cursor-pointer">
+                <i data-lucide="sun" class="w-4 h-4 text-amber-500"></i>
+                <span data-i18n="settings.light">Light Mode</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Color schemes selector picker -->
+          <div class="space-y-2.5">
+            <span data-i18n="settings.colorScheme" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Color Accent</span>
+            <div class="flex items-center gap-3">
+              <!-- Color Circles -->
+              <button id="accent-scheme-emerald" title="Emerald" class="w-7 h-7 rounded-full bg-[#10b981] border-2 border-transparent transition-transform hover:scale-110 cursor-pointer"></button>
+              <button id="accent-scheme-blue" title="Blue" class="w-7 h-7 rounded-full bg-[#3b82f6] border-2 border-transparent transition-transform hover:scale-110 cursor-pointer"></button>
+              <button id="accent-scheme-violet" title="Violet" class="w-7 h-7 rounded-full bg-[#8b5cf6] border-2 border-transparent transition-transform hover:scale-110 cursor-pointer"></button>
+              <button id="accent-scheme-rose" title="Rose" class="w-7 h-7 rounded-full bg-[#f43f5e] border-2 border-transparent transition-transform hover:scale-110 cursor-pointer"></button>
+              <button id="accent-scheme-amber" title="Amber" class="w-7 h-7 rounded-full bg-[#f59e0b] border-2 border-transparent transition-transform hover:scale-110 cursor-pointer"></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Settings Card -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs space-y-4">
+          <h3 class="font-bold text-base text-foreground flex items-center gap-2 border-b border-card-border/50 pb-3">
+            <i data-lucide="user" class="w-4 h-4 text-accent"></i>
+            <span data-i18n="settings.account">Account Info</span>
+          </h3>
+
+          <div class="space-y-1.5 max-w-sm">
+            <label data-i18n="settings.username" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Username</label>
+            <input type="text" id="settings-username-display" readonly
+                   class="w-full bg-background/50 border border-card-border rounded-xl px-3.5 py-2.5 text-xs text-foreground/60 outline-none font-medium">
+          </div>
+        </div>
+
+        <!-- Backup Management Card -->
+        <div class="bg-card border border-card-border p-6 rounded-2xl shadow-xs space-y-6">
+          <h3 class="font-bold text-base text-foreground flex items-center gap-2 border-b border-card-border/50 pb-3">
+            <i data-lucide="database" class="w-4 h-4 text-accent"></i>
+            <span data-i18n="settings.backupTitle">Backup & Data</span>
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Export block -->
+            <div class="space-y-3 bg-background/30 p-4 border border-card-border/40 rounded-xl">
+              <h4 data-i18n="settings.exportTitle" class="font-bold text-xs text-foreground">Export Backup</h4>
+              <p data-i18n="settings.exportDesc" class="text-[11px] text-foreground/45 leading-relaxed font-semibold">
+                Save complete JSON backup to restore history anytime.
+              </p>
+              <button id="btn-backup-export" class="flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent-hover text-primary-foreground text-xs font-semibold rounded-xl transition-all-custom cursor-pointer shadow-xs">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span data-i18n="settings.exportBtn">Export (JSON)</span>
+              </button>
+            </div>
+
+            <!-- Import block -->
+            <div class="space-y-3 bg-background/30 p-4 border border-card-border/40 rounded-xl">
+              <h4 data-i18n="settings.importTitle" class="font-bold text-xs text-foreground">Import Backup</h4>
+              <p data-i18n="settings.importDesc" class="text-[11px] text-foreground/45 leading-relaxed font-semibold">
+                Select your backup JSON file to restore your data.
+              </p>
+              <!-- Hidden input for file selection -->
+              <input type="file" id="backup-file-input" accept=".json" class="hidden">
+              <button id="btn-backup-import" class="flex items-center gap-2 px-4 py-2.5 bg-card border border-card-border hover:bg-card-border/30 text-foreground text-xs font-semibold rounded-xl transition-all-custom cursor-pointer shadow-xs">
+                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                <span data-i18n="settings.importBtn">Import (JSON)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Lucide Icon CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Shared JS & Page JS -->
+  <script src="./shared.js"></script>
+  <script src="./settings.js"></script>
+</body>
+</html>

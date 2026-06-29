@@ -1,0 +1,16 @@
+{
+  "name": "habitflow-static",
+  "version": "1.0.0",
+  "description": "Premium minimalist personal habit tracker styled after Notion and Linear (Static HTML/CSS/JS Version)",
+  "scripts": {
+    "dev": "npx -y live-server"
+  },
+  "keywords": [
+    "habit",
+    "tracker",
+    "static",
+    "vanilla"
+  ],
+  "author": "",
+  "license": "ISC"
+}

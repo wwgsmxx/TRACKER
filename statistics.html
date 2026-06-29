@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow - Analytics & Statistics</title>
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./globals.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            card: 'var(--card)',
+            'card-border': 'var(--card-border)',
+            accent: 'var(--accent)',
+            'accent-hover': 'var(--accent-hover)',
+            sidebar: 'var(--sidebar)',
+            'sidebar-border': 'var(--sidebar-border)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-foreground transition-all-custom print:bg-white print:text-black">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    
+    <!-- Sidebar Container -->
+    <div id="sidebar-container" class="shrink-0 z-40 print:hidden"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-x-hidden p-4 sm:p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full print:p-0">
+      
+      <!-- Header Actions -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden animate-fade-in-up">
+        <div>
+          <h1 data-i18n="statistics.title" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Analytics & Statistics</h1>
+          <p data-i18n="statistics.subtitle" class="text-xs sm:text-sm text-foreground/60 font-medium mt-1">
+            Track your performance trends and consistency over time.
+          </p>
+        </div>
+
+        <!-- Export Buttons -->
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <button id="btn-export-csv" class="flex items-center gap-1.5 px-3 py-2 bg-card border border-card-border rounded-xl text-xs font-semibold hover:bg-card-border/30 transition-all-custom cursor-pointer shadow-xs text-foreground/80">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-500"></i>
+            <span>CSV</span>
+          </button>
+          <button id="btn-print-pdf" class="flex items-center gap-1.5 px-3 py-2 bg-card border border-card-border rounded-xl text-xs font-semibold hover:bg-card-border/30 transition-all-custom cursor-pointer shadow-xs text-foreground/80">
+            <i data-lucide="file-text" class="w-4 h-4 text-blue-500"></i>
+            <span>PDF</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Heatmap Panel -->
+      <div class="bg-card border border-card-border p-4 sm:p-6 rounded-2xl shadow-xs animate-fade-in-up style='animation-delay: 0.08s;'">
+        <h3 class="font-bold text-base text-foreground mb-4 flex items-center gap-2">
+          <i data-lucide="calendar" class="w-4 h-4 text-accent"></i>
+          <span data-i18n="statistics.completionHistory">Completion History (Last 365 Days)</span>
+        </h3>
+
+        <!-- Horizontal scrollable grid -->
+        <div class="overflow-x-auto pb-2 touch-pan-x">
+          <div class="flex gap-[3px] min-w-[720px] select-none" id="heatmap-container">
+            <!-- Weeks columns injected dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Counters -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-fade-in-up" style="animation-delay: 0.15s;">
+        <!-- Active Habits count -->
+        <div class="bg-card border border-card-border p-5 rounded-2xl shadow-xs space-y-2">
+          <div class="flex items-center gap-2 text-foreground/50 text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="award" class="w-4 h-4 text-accent"></i>
+            <span data-i18n="statistics.activeHabits">Active Habits</span>
+          </div>
+          <p class="text-2xl font-extrabold text-foreground" id="stat-active-habits-val">0</p>
+        </div>
+
+        <!-- Total Checkmarks -->
+        <div class="bg-card border border-card-border p-5 rounded-2xl shadow-xs space-y-2">
+          <div class="flex items-center gap-2 text-foreground/50 text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="percent" class="w-4 h-4 text-violet-500"></i>
+            <span data-i18n="statistics.totalLogs">Total Checkmarks</span>
+          </div>
+          <p class="text-2xl font-extrabold text-foreground" id="stat-total-checkmarks-val">0</p>
+        </div>
+
+        <!-- Streak Holder -->
+        <div class="bg-card border border-card-border p-5 rounded-2xl shadow-xs space-y-2">
+          <div class="flex items-center gap-2 text-foreground/50 text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="zap" class="w-4 h-4 text-yellow-500"></i>
+            <span>Streak / Серия</span>
+          </div>
+          <p class="text-lg font-extrabold text-foreground truncate" id="stat-streak-habit-name">-</p>
+          <p class="text-xs text-foreground/45 font-medium"><span id="stat-streak-days-val">0</span> <span data-i18n="dashboard.days">days</span></p>
+        </div>
+      </div>
+
+      <!-- Chart boards -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up" style="animation-delay: 0.22s;">
+        
+        <!-- Completion Rate Line Chart -->
+        <div class="bg-card border border-card-border p-4 sm:p-6 rounded-2xl shadow-xs">
+          <h3 class="font-bold text-base text-foreground mb-4 flex items-center gap-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-accent"></i>
+            <span data-i18n="statistics.completionRate">Completion Rate</span> (%)
+          </h3>
+          <div class="h-64 relative">
+            <canvas id="line-chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly bar chart -->
+        <div class="bg-card border border-card-border p-4 sm:p-6 rounded-2xl shadow-xs">
+          <h3 class="font-bold text-base text-foreground mb-4 flex items-center gap-2">
+            <i data-lucide="check-square" class="w-4 h-4 text-violet-500"></i>
+            <span>Monthly / Айлық</span> (<span id="stat-current-year">2026</span>)
+          </h3>
+          <div class="h-64 relative">
+            <canvas id="bar-chart-canvas"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Lucide Icon CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Shared JS & Page JS -->
+  <script src="./shared.js"></script>
+  <script src="./statistics.js"></script>
+</body>
+</html>

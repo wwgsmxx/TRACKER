@@ -1,0 +1,108 @@
+/* ──────────────────────────────────────────── */
+/* HabitFlow - Global CSS Stylesheet            */
+/* ──────────────────────────────────────────── */
+
+/* Light Theme Variables */
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
+  --card: #ffffff;
+  --card-border: #e2e8f0;
+  --sidebar: #f1f5f9;
+  --sidebar-border: #e2e8f0;
+
+  /* Default accent (Emerald) - will be overridden by JS based on user settings */
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --accent-muted: rgba(16, 185, 129, 0.08);
+}
+
+/* Dark Theme Variables */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --primary: #fafafa;
+  --primary-foreground: #09090b;
+  --card: #121214;
+  --card-border: #27272a;
+  --sidebar: #0f0f11;
+  --sidebar-border: #202023;
+}
+
+/* Base resets & typography */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Webkit Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.45);
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.dark .glass {
+  background: rgba(18, 18, 20, 0.7);
+}
+
+/* Custom transitions and hover states */
+.transition-all-custom {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Accent utilities mapping to Tailwind Play CDN styles */
+.bg-accent { background-color: var(--accent); }
+.text-accent { color: var(--accent); }
+.border-accent { border-color: var(--accent); }
+.hover\:bg-accent-hover:hover { background-color: var(--accent-hover); }
+
+/* Accent background opacity helpers (since color-mix isn't supported in all tailwind engines natively) */
+.bg-accent\/10 { background-color: color-mix(in srgb, var(--accent) 10%, transparent); }
+.bg-accent\/15 { background-color: color-mix(in srgb, var(--accent) 15%, transparent); }
+.bg-accent\/20 { background-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+.border-accent\/20 { border-color: color-mix(in srgb, var(--accent) 20%, transparent); }
+.border-accent\/30 { border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* Fade-in animation helper */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* Spin animation for loading icons */
+.animate-spin-custom {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

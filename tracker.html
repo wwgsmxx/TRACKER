@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HabitFlow - Habits Grid Tracker</title>
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="./globals.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            background: 'var(--background)',
+            foreground: 'var(--foreground)',
+            primary: 'var(--primary)',
+            'primary-foreground': 'var(--primary-foreground)',
+            card: 'var(--card)',
+            'card-border': 'var(--card-border)',
+            accent: 'var(--accent)',
+            'accent-hover': 'var(--accent-hover)',
+            sidebar: 'var(--sidebar)',
+            'sidebar-border': 'var(--sidebar-border)',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-background text-foreground transition-all-custom">
+
+  <div class="flex flex-col md:flex-row min-h-screen">
+    
+    <!-- Sidebar Container -->
+    <div id="sidebar-container" class="shrink-0 z-40"></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-x-hidden p-4 sm:p-6 md:p-8 space-y-6 max-w-full w-full">
+      
+      <!-- Header & Controls -->
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 animate-fade-in-up">
+        <div>
+          <h1 data-i18n="tracker.title" class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">Habits Tracker</h1>
+          <p data-i18n="tracker.subtitle" class="text-xs sm:text-sm text-foreground/60 font-medium mt-1">
+            Check off completed habits daily. Changes save automatically.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <!-- Search input -->
+          <div class="relative flex-1 sm:flex-initial sm:w-56 min-w-[140px]">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/45"></i>
+            <input type="text" id="tracker-search-input" data-i18n-placeholder="tracker.searchPlaceholder" placeholder="Search habits..."
+                   class="w-full bg-card border border-card-border rounded-xl pl-9 pr-4 py-2 text-xs outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all font-medium">
+          </div>
+
+          <!-- Month navigator -->
+          <div class="flex items-center gap-1 bg-card border border-card-border p-1 rounded-xl shadow-xs shrink-0">
+            <button id="btn-prev-month" class="p-1.5 hover:bg-card-border/40 rounded-lg text-foreground/70 transition-colors cursor-pointer">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <span class="text-xs font-bold px-2 sm:px-3 select-none text-foreground/90 text-center min-w-28 sm:min-w-36" id="month-display-label">
+              June 2026
+            </span>
+            <button id="btn-next-month" class="p-1.5 hover:bg-card-border/40 rounded-lg text-foreground/70 transition-colors cursor-pointer">
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Table Container -->
+      <div class="bg-card border border-card-border rounded-2xl overflow-hidden shadow-md max-w-full animate-fade-in-up" style="animation-delay: 0.08s;">
+        <div class="overflow-x-auto max-w-full relative touch-pan-x" id="grid-scroll-container">
+          <table class="w-full border-collapse text-left min-w-[800px] table-fixed" id="tracker-grid-table">
+            <!-- Headers and rows are injected dynamically in tracker.js -->
+          </table>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Lucide Icon CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Shared JS & Page JS -->
+  <script src="./shared.js"></script>
+  <script src="./tracker.js"></script>
+</body>
+</html>
