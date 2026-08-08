@@ -30,12 +30,16 @@ class LocalDB {
 
   static saveDB(db) {
     localStorage.setItem('habitflow_db', JSON.stringify(db));
+    // Trigger sync events for instant auto-save across tabs
+    window.dispatchEvent(new CustomEvent('habitflow_data_saved'));
   }
 
-  static getUserData(username) {
+  static getUserData(userKey) {
+    const key = (userKey || '').trim().toLowerCase();
     const db = this.getDB();
-    if (!db.users[username]) {
-      db.users[username] = {
+    if (!db.users[key]) {
+      db.users[key] = {
+        email: key,
         passwordHash: '',
         settings: { ...DEFAULT_SETTINGS },
         categories: [
@@ -54,12 +58,13 @@ class LocalDB {
       };
       this.saveDB(db);
     }
-    return db.users[username];
+    return db.users[key];
   }
 
-  static saveUserData(username, userData) {
+  static saveUserData(userKey, userData) {
+    const key = (userKey || '').trim().toLowerCase();
     const db = this.getDB();
-    db.users[username] = userData;
+    db.users[key] = userData;
     this.saveDB(db);
   }
 }
@@ -72,18 +77,26 @@ async function hashPassword(password) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Helper to validate email format
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 // ─── Auth System Module ─────────────────────────────────────────────
 const Auth = {
-  async register(username, password) {
-    const trimmed = username.trim();
-    if (trimmed.length < 3) throw new Error('usernameTooShort');
+  async register(email, password) {
+    const trimmed = (email || '').trim().toLowerCase();
+    if (!trimmed || !password) throw new Error('fillAll');
+    if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
     if (password.length < 6) throw new Error('passwordTooShort');
 
     const db = LocalDB.getDB();
-    if (db.users[trimmed]) throw new Error('usernameTaken');
+    if (db.users[trimmed]) throw new Error('emailTaken');
 
     const passwordHash = await hashPassword(password);
     const userData = LocalDB.getUserData(trimmed);
+    userData.email = trimmed;
     userData.passwordHash = passwordHash;
     LocalDB.saveUserData(trimmed, userData);
 
@@ -91,9 +104,10 @@ const Auth = {
     return trimmed;
   },
 
-  async login(username, password) {
-    const trimmed = username.trim();
+  async login(email, password) {
+    const trimmed = (email || '').trim().toLowerCase();
     if (!trimmed || !password) throw new Error('fillAll');
+    if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
 
     const db = LocalDB.getDB();
     if (!db.users[trimmed]) throw new Error('invalidCredentials');
@@ -112,8 +126,8 @@ const Auth = {
     window.location.href = './login.html';
   },
 
-  setSession(username) {
-    localStorage.setItem('habitflow_session', JSON.stringify({ username, loginTime: Date.now() }));
+  setSession(email) {
+    localStorage.setItem('habitflow_session', JSON.stringify({ username: email, email, loginTime: Date.now() }));
   },
 
   getCurrentUser() {
@@ -121,10 +135,10 @@ const Auth = {
     if (!sessionStr) return null;
     try {
       const session = JSON.parse(sessionStr);
-      // Validate that user still exists in database
+      const userKey = (session.email || session.username || '').trim().toLowerCase();
       const db = LocalDB.getDB();
-      if (db.users[session.username]) {
-        return session.username;
+      if (db.users[userKey]) {
+        return userKey;
       }
     } catch (e) {
       return null;
@@ -292,8 +306,8 @@ const TRANSLATIONS = {
       login: {
         title: 'Welcome back',
         subtitle: 'Sign in to your account to continue',
-        username: 'Username',
-        usernamePlaceholder: 'Enter your username',
+        username: 'Email address',
+        usernamePlaceholder: 'name@example.com',
         password: 'Password',
         passwordPlaceholder: '••••••••',
         submit: 'Sign In',
@@ -305,8 +319,8 @@ const TRANSLATIONS = {
       register: {
         title: 'Create account',
         subtitle: 'Start your habit tracking journey today',
-        username: 'Username',
-        usernamePlaceholder: 'Choose a username',
+        username: 'Email address',
+        usernamePlaceholder: 'name@example.com',
         password: 'Password',
         passwordPlaceholder: '••••••••',
         confirmPassword: 'Confirm Password',
@@ -314,17 +328,18 @@ const TRANSLATIONS = {
         submit: 'Create Account',
         hasAccount: 'Already have an account?',
         loginLink: 'Sign in',
-        hint: 'Your data is stored locally on this device.',
+        hint: 'Your data is saved automatically and synced to your account.',
         successTitle: 'Account created!',
         successSubtitle: 'Redirecting to your dashboard...',
       },
       errors: {
         fillAll: 'Please fill in all fields',
         passwordMismatch: 'Passwords do not match',
-        usernameTooShort: 'Username must be at least 3 characters',
+        invalidEmail: 'Please enter a valid email address',
         passwordTooShort: 'Password must be at least 6 characters',
-        usernameTaken: 'Username is already taken',
-        invalidCredentials: 'Invalid username or password',
+        emailTaken: 'An account with this email already exists',
+        usernameTaken: 'An account with this email already exists',
+        invalidCredentials: 'Invalid email address or password',
       }
     }
   },
@@ -403,7 +418,7 @@ const TRANSLATIONS = {
       light: 'Жарық режим',
       colorScheme: 'Акцент түсі',
       account: 'Аккаунт ақпараты',
-      username: 'Қолданушы аты',
+      username: 'Электрондық пошта',
       backupTitle: 'Резервтік көшірме мен Деректер',
       exportTitle: 'Деректерді экспорттау',
       exportDesc: 'Тарихты кез келген уақытта қалпына келтіру үшін толық JSON көшірмесін сақтаңыз.',
@@ -470,8 +485,8 @@ const TRANSLATIONS = {
       login: {
         title: 'Қайта келгеніңізбен',
         subtitle: 'Жалғастыру үшін аккаунтыңызға кіріңіз',
-        username: 'Қолданушы аты',
-        usernamePlaceholder: 'Қолданушы атыңызды енгізіңіз',
+        username: 'Электрондық пошта',
+        usernamePlaceholder: 'name@example.com',
         password: 'Құпия сөз',
         passwordPlaceholder: '••••••••',
         submit: 'Кіру',
@@ -483,8 +498,8 @@ const TRANSLATIONS = {
       register: {
         title: 'Аккаунт жасау',
         subtitle: 'Бүгін әдеттерді қадағалауды бастаңыз',
-        username: 'Қолданушы аты',
-        usernamePlaceholder: 'Қолданушы атын таңдаңыз',
+        username: 'Электрондық пошта',
+        usernamePlaceholder: 'name@example.com',
         password: 'Құпия сөз',
         passwordPlaceholder: '••••••••',
         confirmPassword: 'Құпия сөзді растаңыз',
@@ -492,17 +507,18 @@ const TRANSLATIONS = {
         submit: 'Аккаунт жасау',
         hasAccount: 'Аккаунтыңыз бар ма?',
         loginLink: 'Кіру',
-        hint: 'Деректеріңіз осы құрылғыда жергілікті сақталады.',
+        hint: 'Деректеріңіз автоматты түрде сақталады және синхрондалады.',
         successTitle: 'Аккаунт жасалды!',
         successSubtitle: 'Деректер тақтасына бағытталуда...',
       },
       errors: {
         fillAll: 'Барлық өрістерді толтырыңыз',
         passwordMismatch: 'Құпия сөздер сәйкес келмейді',
-        usernameTooShort: 'Қолданушы аты кемінде 3 таңбадан тұруы керек',
+        invalidEmail: 'Жарамды электрондық пошта мекенжайын енгізіңіз',
         passwordTooShort: 'Құпия сөз кемінде 6 таңбадан тұруы керек',
-        usernameTaken: 'Бұл қолданушы аты бос емес',
-        invalidCredentials: 'Қолданушы аты немесе құпия сөз қате',
+        emailTaken: 'Бұл электрондық пошта тіркелген',
+        usernameTaken: 'Бұл электрондық пошта тіркелген',
+        invalidCredentials: 'Электрондық пошта немесе құпия сөз қате',
       }
     }
   }
@@ -510,14 +526,20 @@ const TRANSLATIONS = {
 
 // ─── Theme & Accent Manager ──────────────────────────────────────────
 const ThemeManager = {
-  apply(theme, colorScheme) {
-    const root = document.documentElement;
+  getTheme() {
+    return localStorage.getItem('habitflow_theme') || 'dark';
+  },
 
-    if (theme === 'dark') {
+  apply(theme, colorScheme = 'emerald') {
+    const root = document.documentElement;
+    const currentTheme = theme || this.getTheme();
+
+    if (currentTheme === 'dark') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
     }
+    localStorage.setItem('habitflow_theme', currentTheme);
 
     const schemeColors = COLOR_SCHEMES[colorScheme] || COLOR_SCHEMES.emerald;
     root.style.setProperty('--accent', schemeColors.accent);
@@ -526,16 +548,32 @@ const ThemeManager = {
   },
 
   load(username) {
-    const userData = LocalDB.getUserData(username);
-    const { theme, colorScheme } = userData.settings || DEFAULT_SETTINGS;
-    this.apply(theme, colorScheme);
+    if (username) {
+      const userData = LocalDB.getUserData(username);
+      const { theme, colorScheme } = userData.settings || DEFAULT_SETTINGS;
+      this.apply(theme, colorScheme);
+    } else {
+      const theme = this.getTheme();
+      this.apply(theme, 'emerald');
+    }
   },
 
   save(username, settingsUpdate) {
-    const userData = LocalDB.getUserData(username);
-    userData.settings = { ...(userData.settings || DEFAULT_SETTINGS), ...settingsUpdate };
-    LocalDB.saveUserData(username, userData);
-    this.apply(userData.settings.theme, userData.settings.colorScheme);
+    if (username) {
+      const userData = LocalDB.getUserData(username);
+      userData.settings = { ...(userData.settings || DEFAULT_SETTINGS), ...settingsUpdate };
+      LocalDB.saveUserData(username, userData);
+      this.apply(userData.settings.theme, userData.settings.colorScheme);
+    } else if (settingsUpdate.theme) {
+      this.apply(settingsUpdate.theme, 'emerald');
+    }
+  },
+
+  toggle(username) {
+    const current = this.getTheme();
+    const next = current === 'dark' ? 'light' : 'dark';
+    this.save(username, { theme: next });
+    return next;
   }
 };
 
@@ -754,12 +792,23 @@ window.addEventListener('localeChanged', () => {
   const user = Auth.getCurrentUser();
   if (user) {
     // Apply user settings
-    const userData = LocalDB.getUserData(user);
-    const { theme, colorScheme } = userData.settings || DEFAULT_SETTINGS;
-    ThemeManager.apply(theme, colorScheme);
+    ThemeManager.load(user);
   } else {
-    // Default theme check
-    const root = document.documentElement;
-    root.classList.add('dark');
+    // Default or stored theme check
+    const theme = ThemeManager.getTheme();
+    ThemeManager.apply(theme, 'emerald');
   }
+
+  // Cross-tab and window instant auto-save synchronization listener
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'habitflow_db' || e.key === 'habitflow_theme') {
+      const activeUser = Auth.getCurrentUser();
+      if (activeUser) {
+        ThemeManager.load(activeUser);
+      } else {
+        ThemeManager.apply(ThemeManager.getTheme(), 'emerald');
+      }
+      window.dispatchEvent(new CustomEvent('habitflow_sync'));
+    }
+  });
 })();

@@ -1,9 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HabitFlow - Access Account</title>
+
+  <!-- Synchronous initial theme script (eliminates navigation flash) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('habitflow_theme');
+        var s = localStorage.getItem('habitflow_session');
+        if (s) {
+          var user = JSON.parse(s).username || JSON.parse(s).email;
+          var db = JSON.parse(localStorage.getItem('habitflow_db') || '{}');
+          if (db.users && user && db.users[user] && db.users[user].settings && db.users[user].settings.theme) {
+            t = db.users[user].settings.theme;
+          }
+        }
+        if (t === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +62,7 @@
     }
   </script>
 </head>
-<body class="min-h-screen bg-[#09090b] text-white flex flex-col justify-between overflow-x-hidden">
+<body class="min-h-screen bg-background text-foreground flex flex-col justify-between overflow-x-hidden">
   
   <!-- Background glow orbs -->
   <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -56,14 +78,14 @@
         <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-extrabold text-white text-base shadow-lg shadow-emerald-500/30">
           H
         </div>
-        <span class="font-extrabold text-white text-lg tracking-tight">HabitFlow</span>
+        <span class="font-extrabold text-foreground text-lg tracking-tight">HabitFlow</span>
       </a>
 
       <!-- Language switcher -->
-      <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
-        <i data-lucide="globe" class="w-3.5 h-3.5 text-zinc-500 ml-1 mr-0.5"></i>
-        <button onclick="LocaleManager.set('en')" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-zinc-400 hover:text-white" id="lang-en">EN</button>
-        <button onclick="LocaleManager.set('kk')" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-zinc-400 hover:text-white" id="lang-kk">ҚАЗ</button>
+      <div class="flex items-center gap-1 bg-card border border-card-border p-1 rounded-xl shadow-xs">
+        <i data-lucide="globe" class="w-3.5 h-3.5 text-foreground/50 ml-1 mr-0.5"></i>
+        <button onclick="LocaleManager.set('en')" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-foreground/60 hover:text-foreground" id="lang-en">EN</button>
+        <button onclick="LocaleManager.set('kk')" class="px-2.5 py-1 rounded-lg text-xs font-extrabold transition-all cursor-pointer text-foreground/60 hover:text-foreground" id="lang-kk">ҚАЗ</button>
       </div>
     </div>
   </header>
@@ -73,10 +95,10 @@
     <div class="w-full max-w-[420px] animate-fade-in-up">
       
       <!-- Card wrapper -->
-      <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-3xl p-8 shadow-2xl relative overflow-hidden" id="auth-card">
+      <div class="bg-card border border-card-border rounded-3xl p-8 shadow-2xl relative overflow-hidden" id="auth-card">
         
         <!-- Error box -->
-        <div id="error-box" class="hidden mb-5 p-3 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-400 text-xs font-semibold flex items-center gap-2">
+        <div id="error-box" class="hidden mb-5 p-3 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-500 dark:text-rose-400 text-xs font-semibold flex items-center gap-2">
           <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
           <span id="error-message">Error message</span>
         </div>
@@ -84,21 +106,21 @@
         <!-- Tab 1: Login Form -->
         <div id="tab-login">
           <div class="space-y-1 mb-6">
-            <h2 data-i18n="auth.login.title" class="text-2xl font-bold tracking-tight text-white">Welcome back</h2>
-            <p data-i18n="auth.login.subtitle" class="text-xs text-zinc-500 font-medium">Sign in to your account to continue</p>
+            <h2 data-i18n="auth.login.title" class="text-2xl font-bold tracking-tight text-foreground">Welcome back</h2>
+            <p data-i18n="auth.login.subtitle" class="text-xs text-foreground/60 font-medium">Sign in to your account to continue</p>
           </div>
 
           <form id="login-form" class="space-y-4">
             <div class="space-y-1.5">
-              <label data-i18n="auth.login.username" class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Username</label>
-              <input type="text" id="login-username" data-i18n-placeholder="auth.login.usernamePlaceholder" placeholder="Enter your username" required
-                     class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
+              <label data-i18n="auth.login.username" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Email address</label>
+              <input type="email" id="login-username" data-i18n-placeholder="auth.login.usernamePlaceholder" placeholder="name@example.com" required
+                     class="w-full bg-background border border-card-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
             </div>
 
             <div class="space-y-1.5">
-              <label data-i18n="auth.login.password" class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Password</label>
+              <label data-i18n="auth.login.password" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Password</label>
               <input type="password" id="login-password" data-i18n-placeholder="auth.login.passwordPlaceholder" placeholder="••••••••" required
-                     class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
+                     class="w-full bg-background border border-card-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
             </div>
 
             <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-emerald-500/25 cursor-pointer flex items-center justify-center gap-2">
@@ -108,35 +130,35 @@
           </form>
 
           <div class="mt-6 text-center text-xs font-medium">
-            <span data-i18n="auth.login.noAccount" class="text-zinc-500">Don't have an account?</span>
-            <button onclick="switchTab('register')" data-i18n="auth.login.registerLink" class="text-emerald-400 hover:underline font-bold ml-1 cursor-pointer">Create one</button>
+            <span data-i18n="auth.login.noAccount" class="text-foreground/50">Don't have an account?</span>
+            <button onclick="switchTab('register')" data-i18n="auth.login.registerLink" class="text-emerald-500 dark:text-emerald-400 hover:underline font-bold ml-1 cursor-pointer">Create one</button>
           </div>
         </div>
 
         <!-- Tab 2: Register Form -->
         <div id="tab-register" class="hidden">
           <div class="space-y-1 mb-6">
-            <h2 data-i18n="auth.register.title" class="text-2xl font-bold tracking-tight text-white">Create account</h2>
-            <p data-i18n="auth.register.subtitle" class="text-xs text-zinc-500 font-medium">Start your habit tracking journey today</p>
+            <h2 data-i18n="auth.register.title" class="text-2xl font-bold tracking-tight text-foreground">Create account</h2>
+            <p data-i18n="auth.register.subtitle" class="text-xs text-foreground/60 font-medium">Start your habit tracking journey today</p>
           </div>
 
           <form id="register-form" class="space-y-4">
             <div class="space-y-1.5">
-              <label data-i18n="auth.register.username" class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Username</label>
-              <input type="text" id="register-username" data-i18n-placeholder="auth.register.usernamePlaceholder" placeholder="Choose a username" required
-                     class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
+              <label data-i18n="auth.register.username" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Email address</label>
+              <input type="email" id="register-username" data-i18n-placeholder="auth.register.usernamePlaceholder" placeholder="name@example.com" required
+                     class="w-full bg-background border border-card-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
             </div>
 
             <div class="space-y-1.5">
-              <label data-i18n="auth.register.password" class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Password</label>
+              <label data-i18n="auth.register.password" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Password</label>
               <input type="password" id="register-password" data-i18n-placeholder="auth.register.passwordPlaceholder" placeholder="••••••••" required
-                     class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
+                     class="w-full bg-background border border-card-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
             </div>
 
             <div class="space-y-1.5">
-              <label data-i18n="auth.register.confirmPassword" class="text-xs font-bold text-zinc-400 uppercase tracking-wide">Confirm Password</label>
+              <label data-i18n="auth.register.confirmPassword" class="text-xs font-bold text-foreground/50 uppercase tracking-wide">Confirm Password</label>
               <input type="password" id="register-confirm-password" data-i18n-placeholder="auth.register.confirmPasswordPlaceholder" placeholder="••••••••" required
-                     class="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
+                     class="w-full bg-background border border-card-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground/30 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all font-medium">
             </div>
 
             <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm rounded-xl transition-all shadow-lg shadow-emerald-500/25 cursor-pointer flex items-center justify-center gap-2">
@@ -145,21 +167,21 @@
             </button>
           </form>
 
-          <p data-i18n="auth.register.hint" class="text-[10px] text-center text-zinc-600 mt-4 font-semibold">Your data is stored locally on this device.</p>
+          <p data-i18n="auth.register.hint" class="text-[10px] text-center text-foreground/50 mt-4 font-semibold">Your data is saved automatically and synced to your account.</p>
 
           <div class="mt-6 text-center text-xs font-medium">
-            <span data-i18n="auth.register.hasAccount" class="text-zinc-500">Already have an account?</span>
-            <button onclick="switchTab('login')" data-i18n="auth.register.loginLink" class="text-emerald-400 hover:underline font-bold ml-1 cursor-pointer">Sign in</button>
+            <span data-i18n="auth.register.hasAccount" class="text-foreground/50">Already have an account?</span>
+            <button onclick="switchTab('login')" data-i18n="auth.register.loginLink" class="text-emerald-500 dark:text-emerald-400 hover:underline font-bold ml-1 cursor-pointer">Sign in</button>
           </div>
         </div>
 
         <!-- Success overlay -->
-        <div id="success-overlay" class="absolute inset-0 bg-[#09090b]/95 z-10 flex flex-col items-center justify-center text-center p-8 hidden">
-          <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+        <div id="success-overlay" class="absolute inset-0 bg-background/95 z-10 flex flex-col items-center justify-center text-center p-8 hidden">
+          <div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 flex items-center justify-center mb-4">
             <i data-lucide="check-circle-2" class="w-8 h-8"></i>
           </div>
-          <h3 class="text-xl font-bold text-white mb-1" id="success-title">Account Created!</h3>
-          <p class="text-xs text-zinc-400 font-medium" id="success-subtitle">Redirecting to your dashboard...</p>
+          <h3 class="text-xl font-bold text-foreground mb-1" id="success-title">Account Created!</h3>
+          <p class="text-xs text-foreground/60 font-medium" id="success-subtitle">Redirecting to your dashboard...</p>
         </div>
 
       </div>
@@ -168,7 +190,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="p-6 border-t border-zinc-900 text-center text-xs text-zinc-600 font-medium">
+  <footer class="p-6 border-t border-card-border text-center text-xs text-foreground/50 font-medium">
     © <span id="current-year">2026</span> HabitFlow. All rights reserved.
   </footer>
 

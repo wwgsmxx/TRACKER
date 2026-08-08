@@ -36,7 +36,6 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Webkit Scrollbars */

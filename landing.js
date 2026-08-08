@@ -21,12 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     items.forEach((item, index) => {
       grid.innerHTML += `
-        <div class="group relative bg-zinc-900/60 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl p-6 transition-all cursor-default overflow-hidden">
+        <div class="group relative bg-card border border-card-border hover:border-emerald-500/40 rounded-2xl p-6 transition-all cursor-default overflow-hidden shadow-xs">
           <div class="absolute inset-0 bg-emerald-500/0 group-hover:bg-emerald-500/3 rounded-2xl transition-all"></div>
           <div class="relative">
             <div class="text-3xl mb-4">${item.icon}</div>
-            <h3 class="text-white font-bold text-base mb-2">${item.title}</h3>
-            <p class="text-zinc-500 text-sm leading-relaxed font-medium">${item.desc}</p>
+            <h3 class="text-foreground font-bold text-base mb-2">${item.title}</h3>
+            <p class="text-foreground/60 text-sm leading-relaxed font-medium">${item.desc}</p>
           </div>
         </div>
       `;
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <button id="preview-tab-${index}" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
           isActive 
             ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/25' 
-            : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+            : 'bg-card border border-card-border text-foreground/60 hover:text-foreground hover:border-card-border/80'
         }">
           <i data-lucide="${tabIcons[index]}" class="w-3.5 h-3.5"></i>
           <span>${name}</span>
@@ -73,75 +73,75 @@ document.addEventListener('DOMContentLoaded', () => {
     const t = TRANSLATIONS[locale].dashboard;
     
     return `
-      <div class="w-full bg-[#09090b] rounded-xl p-4 border border-zinc-800 text-[11px] space-y-3 shadow-2xl">
+      <div class="w-full bg-background rounded-xl p-4 border border-card-border text-[11px] space-y-3 shadow-2xl">
         <div class="flex items-center justify-between mb-1">
-          <span class="font-bold text-white text-sm">Dashboard</span>
-          <span class="text-zinc-500 text-[10px]">Jun 2026</span>
+          <span class="font-bold text-foreground text-sm">Dashboard</span>
+          <span class="text-foreground/50 text-[10px]">Jun 2026</span>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
-            <div class="text-zinc-500 text-[9px] font-bold uppercase tracking-wide mb-1">${t.todayProgress}</div>
-            <div class="text-white font-extrabold text-sm">7 / 10</div>
-            <div class="text-zinc-600 text-[9px] font-medium mt-0.5">70% completed</div>
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
+            <div class="text-foreground/50 text-[9px] font-bold uppercase tracking-wide mb-1">${t.todayProgress}</div>
+            <div class="text-foreground font-extrabold text-sm">7 / 10</div>
+            <div class="text-foreground/45 text-[9px] font-medium mt-0.5">70% completed</div>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
-            <div class="text-zinc-500 text-[9px] font-bold uppercase tracking-wide mb-1">${t.currentStreak}</div>
-            <div class="text-white font-extrabold text-sm">12 days</div>
-            <div class="text-zinc-600 text-[9px] font-medium mt-0.5">${t.keepItGoing}</div>
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
+            <div class="text-foreground/50 text-[9px] font-bold uppercase tracking-wide mb-1">${t.currentStreak}</div>
+            <div class="text-foreground font-extrabold text-sm">12 days</div>
+            <div class="text-foreground/45 text-[9px] font-medium mt-0.5">${t.keepItGoing}</div>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
-            <div class="text-zinc-500 text-[9px] font-bold uppercase tracking-wide mb-1">${t.bestStreak}</div>
-            <div class="text-white font-extrabold text-sm">21 days</div>
-            <div class="text-zinc-600 text-[9px] font-medium mt-0.5">${t.absoluteRecord}</div>
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
+            <div class="text-foreground/50 text-[9px] font-bold uppercase tracking-wide mb-1">${t.bestStreak}</div>
+            <div class="text-foreground font-extrabold text-sm">21 days</div>
+            <div class="text-foreground/45 text-[9px] font-medium mt-0.5">${t.absoluteRecord}</div>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
-            <div class="text-zinc-500 text-[9px] font-bold uppercase tracking-wide mb-1">${t.totalCheckmarks}</div>
-            <div class="text-white font-extrabold text-sm">248</div>
-            <div class="text-zinc-600 text-[9px] font-medium mt-0.5">This year</div>
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
+            <div class="text-foreground/50 text-[9px] font-bold uppercase tracking-wide mb-1">${t.totalCheckmarks}</div>
+            <div class="text-foreground font-extrabold text-sm">248</div>
+            <div class="text-foreground/45 text-[9px] font-medium mt-0.5">This year</div>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-zinc-300 font-bold text-[10px]">${t.monthlyGoals}</span>
-              <span class="text-[8px] font-bold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">June</span>
+              <span class="text-foreground/80 font-bold text-[10px]">${t.monthlyGoals}</span>
+              <span class="text-[8px] font-bold bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">June</span>
             </div>
             <div class="space-y-1">
               <div class="flex items-center gap-1.5">
                 <div class="w-3 h-3 rounded border border-emerald-500 bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <i data-lucide="check" class="w-2.5 h-2.5 text-emerald-400"></i>
+                  <i data-lucide="check" class="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400"></i>
                 </div>
-                <span class="text-[9px] font-medium line-through text-zinc-600">Read 4 books</span>
+                <span class="text-[9px] font-medium line-through text-foreground/40">Read 4 books</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded border border-zinc-700 flex items-center justify-center flex-shrink-0"></div>
-                <span class="text-[9px] font-medium text-zinc-400">Exercise 20 days</span>
+                <div class="w-3 h-3 rounded border border-card-border flex items-center justify-center flex-shrink-0"></div>
+                <span class="text-[9px] font-medium text-foreground/70">Exercise 20 days</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded border border-zinc-700 flex items-center justify-center flex-shrink-0"></div>
-                <span class="text-[9px] font-medium text-zinc-400">Learn Spanish</span>
+                <div class="w-3 h-3 rounded border border-card-border flex items-center justify-center flex-shrink-0"></div>
+                <span class="text-[9px] font-medium text-foreground/70">Learn Spanish</span>
               </div>
             </div>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
             <div class="flex items-center justify-between mb-1.5">
-              <span class="text-zinc-300 font-bold text-[10px]">${t.yearlyGoals}</span>
-              <span class="text-[8px] font-bold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">2026</span>
+              <span class="text-foreground/80 font-bold text-[10px]">${t.yearlyGoals}</span>
+              <span class="text-[8px] font-bold bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 px-1.5 py-0.5 rounded-full">2026</span>
             </div>
             <div class="space-y-1">
               <div class="flex items-center gap-1.5">
                 <div class="w-3 h-3 rounded border border-emerald-500 bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <i data-lucide="check" class="w-2.5 h-2.5 text-emerald-400"></i>
+                  <i data-lucide="check" class="w-2.5 h-2.5 text-emerald-500 dark:text-emerald-400"></i>
                 </div>
-                <span class="text-[9px] font-medium line-through text-zinc-600">Run a marathon</span>
+                <span class="text-[9px] font-medium line-through text-foreground/40">Run a marathon</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded border border-zinc-700 flex items-center justify-center flex-shrink-0"></div>
-                <span class="text-[9px] font-medium text-zinc-400">Save $5000</span>
+                <div class="w-3 h-3 rounded border border-card-border flex items-center justify-center flex-shrink-0"></div>
+                <span class="text-[9px] font-medium text-foreground/70">Save $5000</span>
               </div>
               <div class="flex items-center gap-1.5">
-                <div class="w-3 h-3 rounded border border-zinc-700 flex items-center justify-center flex-shrink-0"></div>
-                <span class="text-[9px] font-medium text-zinc-400">Launch a project</span>
+                <div class="w-3 h-3 rounded border border-card-border flex items-center justify-center flex-shrink-0"></div>
+                <span class="text-[9px] font-medium text-foreground/70">Launch a project</span>
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let headers = '';
     days.forEach(d => {
-      headers += `<th class="px-1 py-2 text-center font-bold min-w-[20px] ${d === 15 ? 'text-emerald-400 bg-emerald-500/10' : 'text-zinc-600'}">${d}</th>`;
+      headers += `<th class="px-1 py-2 text-center font-bold min-w-[20px] ${d === 15 ? 'text-emerald-500 dark:text-emerald-400 bg-emerald-500/10' : 'text-foreground/50'}">${d}</th>`;
     });
 
     let rows = '';
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cells += `
           <td class="px-0.5 py-1 text-center ${d === 15 ? 'bg-emerald-500/5' : ''}">
             <div class="w-4 h-4 mx-auto rounded-sm border flex items-center justify-center ${
-              checked ? 'bg-emerald-500 border-emerald-500' : 'border-zinc-700'
+              checked ? 'bg-emerald-500 border-emerald-500' : 'border-card-border'
             }">
               ${checked ? '<i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>' : ''}
             </div>
@@ -182,10 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const percentage = Math.round((habit.checks.length / days.length) * 100);
       rows += `
-        <tr class="border-b border-zinc-800/50">
-          <td class="sticky left-0 bg-[#09090b] px-3 py-1.5">
-            <div class="text-zinc-300 font-semibold text-[9px] truncate w-24">${habit.name}</div>
-            <div class="w-full bg-zinc-800 h-0.5 rounded-full mt-1 overflow-hidden">
+        <tr class="border-b border-card-border/50">
+          <td class="sticky left-0 bg-background px-3 py-1.5">
+            <div class="text-foreground/80 font-semibold text-[9px] truncate w-24">${habit.name}</div>
+            <div class="w-full bg-card-border/50 h-0.5 rounded-full mt-1 overflow-hidden">
               <div class="bg-emerald-500 h-full rounded-full" style="width: ${percentage}%"></div>
             </div>
           </td>
@@ -195,16 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     return `
-      <div class="w-full bg-[#09090b] rounded-xl border border-zinc-800 overflow-hidden shadow-2xl">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800">
-          <span class="font-bold text-white text-sm">Habit Tracker</span>
-          <span class="text-zinc-500 text-[10px] font-semibold">June 2026</span>
+      <div class="w-full bg-background rounded-xl border border-card-border overflow-hidden shadow-2xl">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-card-border">
+          <span class="font-bold text-foreground text-sm">Habit Tracker</span>
+          <span class="text-foreground/50 text-[10px] font-semibold">June 2026</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full border-collapse text-[9px]">
             <thead>
-              <tr class="border-b border-zinc-800">
-                <th class="sticky left-0 bg-[#09090b] text-left px-3 py-2 text-zinc-500 font-bold w-28">Habit</th>
+              <tr class="border-b border-card-border">
+                <th class="sticky left-0 bg-background text-left px-3 py-2 text-foreground/50 font-bold w-28">Habit</th>
                 ${headers}
               </tr>
             </thead>
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const getColor = (v) => {
-      if (v === 0) return 'bg-zinc-800/60';
+      if (v === 0) return 'bg-card-border/60';
       if (v === 1) return 'bg-emerald-500/30';
       if (v === 2) return 'bg-emerald-500/60';
       return 'bg-emerald-500';
@@ -249,28 +249,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     return `
-      <div class="w-full bg-[#09090b] rounded-xl border border-zinc-800 shadow-2xl overflow-hidden text-[10px]">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800">
-          <span class="font-bold text-white text-sm">${t.title}</span>
-          <span class="text-zinc-500 text-[10px] font-semibold">Last 365 days</span>
+      <div class="w-full bg-background rounded-xl border border-card-border shadow-2xl overflow-hidden text-[10px]">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-card-border">
+          <span class="font-bold text-foreground text-sm">${t.title}</span>
+          <span class="text-foreground/50 text-[10px] font-semibold">Last 365 days</span>
         </div>
         <div class="p-4 space-y-3">
           <div class="grid grid-cols-3 gap-2">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2">
-              <div class="text-zinc-500 text-[8px] font-bold uppercase tracking-wide">${t.activeHabits}</div>
-              <div class="text-white font-extrabold text-xs mt-0.5">12</div>
+            <div class="bg-card border border-card-border rounded-lg p-2">
+              <div class="text-foreground/50 text-[8px] font-bold uppercase tracking-wide">${t.activeHabits}</div>
+              <div class="text-foreground font-extrabold text-xs mt-0.5">12</div>
             </div>
-            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2">
-              <div class="text-zinc-500 text-[8px] font-bold uppercase tracking-wide">${t.totalLogs}</div>
-              <div class="text-white font-extrabold text-xs mt-0.5">348</div>
+            <div class="bg-card border border-card-border rounded-lg p-2">
+              <div class="text-foreground/50 text-[8px] font-bold uppercase tracking-wide">${t.totalLogs}</div>
+              <div class="text-foreground font-extrabold text-xs mt-0.5">348</div>
             </div>
-            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2">
-              <div class="text-zinc-500 text-[8px] font-bold uppercase tracking-wide">Best Streak</div>
-              <div class="text-white font-extrabold text-xs mt-0.5">21 days</div>
+            <div class="bg-card border border-card-border rounded-lg p-2">
+              <div class="text-foreground/50 text-[8px] font-bold uppercase tracking-wide">Best Streak</div>
+              <div class="text-foreground font-extrabold text-xs mt-0.5">21 days</div>
             </div>
           </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5">
-            <div class="text-zinc-500 text-[9px] font-bold mb-2">${t.completionHistory}</div>
+          <div class="bg-card border border-card-border rounded-lg p-2.5">
+            <div class="text-foreground/50 text-[9px] font-bold mb-2">${t.completionHistory}</div>
             <div class="flex gap-[2px] overflow-x-auto pb-1">
               ${heatmapHTML}
             </div>
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekdaysShort = TRANSLATIONS[locale].weekdaysShort;
     let weekdaysHTML = '';
     weekdaysShort.forEach(wd => {
-      weekdaysHTML += `<div class="text-zinc-600 text-[8px] font-bold text-center">${wd[0]}</div>`;
+      weekdaysHTML += `<div class="text-foreground/40 text-[8px] font-bold text-center">${wd[0]}</div>`;
     });
 
     let calendarDaysHTML = '';
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = d === 15;
       calendarDaysHTML += `
         <div class="aspect-square rounded-md flex items-center justify-center text-[8px] font-bold relative ${
-          isSelected ? 'border border-emerald-500 text-emerald-400' : 'text-zinc-500'
+          isSelected ? 'border border-emerald-500 text-emerald-500 dark:text-emerald-400' : 'text-foreground/60'
         }">
           ${d}
           ${comp ? '<div class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-500"></div>' : ''}
@@ -311,10 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     return `
-      <div class="w-full bg-[#09090b] rounded-xl border border-zinc-800 shadow-2xl overflow-hidden text-[10px]">
-        <div class="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800">
-          <span class="font-bold text-white text-sm">${t.title}</span>
-          <span class="text-zinc-500 text-[10px] font-semibold">June 2026</span>
+      <div class="w-full bg-background rounded-xl border border-card-border shadow-2xl overflow-hidden text-[10px]">
+        <div class="flex items-center justify-between px-4 py-2.5 border-b border-card-border">
+          <span class="font-bold text-foreground text-sm">${t.title}</span>
+          <span class="text-foreground/50 text-[10px] font-semibold">June 2026</span>
         </div>
         <div class="p-3 grid grid-cols-2 gap-3">
           <div>
@@ -326,30 +326,30 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="space-y-2">
-            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2">
-              <div class="text-zinc-500 text-[8px] font-bold mb-1.5">15 June — Habits</div>
+            <div class="bg-card border border-card-border rounded-lg p-2">
+              <div class="text-foreground/50 text-[8px] font-bold mb-1.5">15 June — Habits</div>
               <div class="space-y-1">
                 <div class="flex items-center gap-1.5">
                   <div class="w-3 h-3 rounded border border-emerald-500 bg-emerald-500/20 flex items-center justify-center">
-                    <i data-lucide="check" class="w-2 h-2 text-emerald-400"></i>
+                    <i data-lucide="check" class="w-2 h-2 text-emerald-500 dark:text-emerald-400"></i>
                   </div>
-                  <span class="text-[8px] font-medium line-through text-zinc-600">Drink Water</span>
+                  <span class="text-[8px] font-medium line-through text-foreground/40">Drink Water</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <div class="w-3 h-3 rounded border border-emerald-500 bg-emerald-500/20 flex items-center justify-center">
-                    <i data-lucide="check" class="w-2 h-2 text-emerald-400"></i>
+                    <i data-lucide="check" class="w-2 h-2 text-emerald-500 dark:text-emerald-400"></i>
                   </div>
-                  <span class="text-[8px] font-medium line-through text-zinc-600">Exercise</span>
+                  <span class="text-[8px] font-medium line-through text-foreground/40">Exercise</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                  <div class="w-3 h-3 rounded border border-zinc-700 flex items-center justify-center"></div>
-                  <span class="text-[8px] font-medium text-zinc-400">Read Book</span>
+                  <div class="w-3 h-3 rounded border border-card-border flex items-center justify-center"></div>
+                  <span class="text-[8px] font-medium text-foreground/70">Read Book</span>
                 </div>
               </div>
             </div>
-            <div class="bg-zinc-900 border border-zinc-800 rounded-lg p-2">
-              <div class="text-zinc-500 text-[8px] font-bold mb-1">${t.dailyNotes}</div>
-              <div class="text-zinc-500 text-[8px] leading-relaxed">Great workout today! Feeling energized and ready for the rest of the week...</div>
+            <div class="bg-card border border-card-border rounded-lg p-2">
+              <div class="text-foreground/50 text-[8px] font-bold mb-1">${t.dailyNotes}</div>
+              <div class="text-foreground/60 text-[8px] leading-relaxed">Great workout today! Feeling energized and ready for the rest of the week...</div>
             </div>
           </div>
         </div>
@@ -423,9 +423,22 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen to language changes
   window.addEventListener('localeChanged', translatePage);
 
+  // Setup theme toggle button
+  const themeToggleBtn = document.getElementById('landing-theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const user = Auth.getCurrentUser();
+      ThemeManager.toggle(user);
+      if (window.lucide) window.lucide.createIcons();
+      renderActivePreview();
+      const heroPrev = document.getElementById('hero-preview-container');
+      if (heroPrev) heroPrev.innerHTML = getDashboardPreviewHTML();
+    });
+  }
+
   // Setup landing hero animation preview
   const heroPreview = document.getElementById('hero-preview-container');
-  heroPreview.innerHTML = getDashboardPreviewHTML();
+  if (heroPreview) heroPreview.innerHTML = getDashboardPreviewHTML();
 
   // Trigger first render
   translatePage();

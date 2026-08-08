@@ -1,9 +1,31 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HabitFlow - Build Habits That Actually Stick</title>
+
+  <!-- Synchronous initial theme script (eliminates navigation flash) -->
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('habitflow_theme');
+        var s = localStorage.getItem('habitflow_session');
+        if (s) {
+          var user = JSON.parse(s).username || JSON.parse(s).email;
+          var db = JSON.parse(localStorage.getItem('habitflow_db') || '{}');
+          if (db.users && user && db.users[user] && db.users[user].settings && db.users[user].settings.theme) {
+            t = db.users[user].settings.theme;
+          }
+        }
+        if (t === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
   
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +62,7 @@
     }
   </script>
 </head>
-<body class="min-h-screen bg-[#09090b] text-white overflow-x-hidden">
+<body class="min-h-screen bg-background text-foreground overflow-x-hidden">
   
   <!-- Background glow orbs -->
   <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
@@ -50,32 +72,38 @@
   </div>
 
   <!-- ─── Navbar ─────────────────────────────────────────────── -->
-  <nav class="sticky top-0 z-50 border-b border-white/5 bg-[#09090b]/80 backdrop-blur-xl">
+  <nav class="sticky top-0 z-50 border-b border-card-border bg-background/80 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <!-- Logo -->
       <div class="flex items-center gap-2.5">
         <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center font-extrabold text-white text-base shadow-lg shadow-emerald-500/30">
           H
         </div>
-        <span class="font-extrabold text-white text-lg tracking-tight">HabitFlow</span>
+        <span class="font-extrabold text-foreground text-lg tracking-tight">HabitFlow</span>
       </div>
 
       <!-- Nav links — desktop -->
       <div class="hidden md:flex items-center gap-8">
-        <a href="#features" data-i18n="landing.nav.features" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Features</a>
-        <a href="#preview" data-i18n="landing.nav.preview" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors">Preview</a>
+        <a href="#features" data-i18n="landing.nav.features" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Features</a>
+        <a href="#preview" data-i18n="landing.nav.preview" class="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors">Preview</a>
       </div>
 
       <!-- Right side -->
       <div class="flex items-center gap-3">
+        <!-- Theme Toggle Switcher -->
+        <button id="landing-theme-toggle" title="Toggle Dark / Light Theme" class="flex items-center justify-center w-8 h-8 rounded-xl bg-card border border-card-border text-foreground hover:bg-card-border/40 transition-all cursor-pointer shadow-xs">
+          <i data-lucide="moon" class="w-4 h-4 text-violet-400 dark:block hidden"></i>
+          <i data-lucide="sun" class="w-4 h-4 text-amber-500 dark:hidden block"></i>
+        </button>
+
         <!-- Language Switcher -->
-        <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
-          <i data-lucide="globe" class="w-3.5 h-3.5 text-zinc-500 ml-1 mr-0.5"></i>
-          <button id="lang-btn-en" onclick="LocaleManager.set('en')" class="px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer text-zinc-400 hover:text-white">EN</button>
-          <button id="lang-btn-kk" onclick="LocaleManager.set('kk')" class="px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer text-zinc-400 hover:text-white">ҚАЗ</button>
+        <div class="flex items-center gap-1 bg-card border border-card-border p-1 rounded-xl shadow-xs">
+          <i data-lucide="globe" class="w-3.5 h-3.5 text-foreground/50 ml-1 mr-0.5"></i>
+          <button id="lang-btn-en" onclick="LocaleManager.set('en')" class="px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer text-foreground/60 hover:text-foreground">EN</button>
+          <button id="lang-btn-kk" onclick="LocaleManager.set('kk')" class="px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer text-foreground/60 hover:text-foreground">ҚАЗ</button>
         </div>
 
-        <a href="./login.html" data-i18n="landing.nav.signIn" class="hidden md:flex px-4 py-2 text-sm font-semibold text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-xl transition-all">
+        <a href="./login.html" data-i18n="landing.nav.signIn" class="hidden md:flex px-4 py-2 text-sm font-semibold text-foreground/80 hover:text-foreground border border-card-border hover:border-foreground/30 rounded-xl transition-all">
           Sign In
         </a>
         <a href="./login.html?tab=register" data-i18n="landing.nav.getStarted" class="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl transition-all shadow-lg shadow-emerald-500/25">
@@ -90,22 +118,22 @@
   <section class="relative max-w-7xl mx-auto px-6 pt-20 pb-16 md:pt-32 md:pb-24">
     <div class="text-center max-w-4xl mx-auto animate-fade-in-up">
       <!-- Badge -->
-      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-semibold mb-8">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 text-xs font-semibold mb-8">
         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
         <span data-i18n="landing.hero.badge">Your personal growth companion</span>
       </div>
 
       <!-- Headline -->
-      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-[1.05] mb-6">
+      <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-foreground leading-[1.05] mb-6">
         <span data-i18n="landing.hero.title">Build habits that</span> 
         <span class="relative inline-block">
-          <span class="text-emerald-400" data-i18n="landing.hero.titleAccent">actually stick.</span>
+          <span class="text-emerald-500 dark:text-emerald-400" data-i18n="landing.hero.titleAccent">actually stick.</span>
           <div class="absolute -bottom-1 left-0 right-0 h-1 bg-emerald-500/40 rounded-full"></div>
         </span>
       </h1>
 
       <!-- Subtitle -->
-      <p data-i18n="landing.hero.subtitle" class="text-lg md:text-xl text-zinc-400 font-medium leading-relaxed max-w-2xl mx-auto mb-10">
+      <p data-i18n="landing.hero.subtitle" class="text-lg md:text-xl text-foreground/60 font-medium leading-relaxed max-w-2xl mx-auto mb-10">
         HabitFlow helps you track daily habits, set goals, and visualize your consistency — beautifully designed, always in sync.
       </p>
 
@@ -115,7 +143,7 @@
           <span data-i18n="landing.hero.ctaPrimary">Start for Free</span>
           <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
         </a>
-        <a href="./login.html" data-i18n="landing.hero.ctaSecondary" class="flex items-center gap-2 px-8 py-4 text-zinc-300 hover:text-white font-semibold text-base border border-zinc-700 hover:border-zinc-500 rounded-2xl transition-all">
+        <a href="./login.html" data-i18n="landing.hero.ctaSecondary" class="flex items-center gap-2 px-8 py-4 text-foreground/80 hover:text-foreground font-semibold text-base border border-card-border hover:border-foreground/30 rounded-2xl transition-all bg-card">
           Sign In
         </a>
       </div>
@@ -125,47 +153,47 @@
     <div class="mt-16 max-w-5xl mx-auto animate-fade-in-up" style="animation-delay: 0.15s;">
       <div class="relative">
         <div class="absolute inset-0 bg-emerald-500/10 rounded-3xl blur-3xl scale-95"></div>
-        <div class="relative rounded-2xl border border-zinc-800/80 bg-[#0f0f11] shadow-2xl overflow-hidden">
+        <div class="relative rounded-2xl border border-card-border bg-card shadow-2xl overflow-hidden">
           <!-- Window chrome -->
-          <div class="flex items-center gap-2 px-4 py-3 border-b border-zinc-800 bg-[#09090b]">
-            <div class="w-3 h-3 rounded-full bg-zinc-700"></div>
-            <div class="w-3 h-3 rounded-full bg-zinc-700"></div>
-            <div class="w-3 h-3 rounded-full bg-zinc-700"></div>
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-card-border bg-sidebar">
+            <div class="w-3 h-3 rounded-full bg-foreground/20"></div>
+            <div class="w-3 h-3 rounded-full bg-foreground/20"></div>
+            <div class="w-3 h-3 rounded-full bg-foreground/20"></div>
             <div class="flex-1 mx-4">
-              <div class="h-5 bg-zinc-800/60 rounded-md px-3 flex items-center">
-                <span class="text-zinc-600 text-[10px] font-medium">habitflow.app/dashboard</span>
+              <div class="h-5 bg-background border border-card-border/50 rounded-md px-3 flex items-center">
+                <span class="text-foreground/40 text-[10px] font-medium">habitflow.app/dashboard</span>
               </div>
             </div>
           </div>
           <!-- App content -->
           <div class="flex h-[380px] md:h-[460px]">
             <!-- Sidebar preview (desktop style) -->
-            <div class="w-48 border-r border-zinc-800 bg-[#0a0a0c] flex flex-col hidden sm:flex">
-              <div class="p-4 border-b border-zinc-800 flex items-center gap-2">
+            <div class="w-48 border-r border-card-border bg-sidebar flex flex-col hidden sm:flex">
+              <div class="p-4 border-b border-card-border flex items-center gap-2">
                 <div class="w-6 h-6 rounded-md bg-emerald-500 flex items-center justify-center font-bold text-white text-xs">H</div>
-                <span class="text-white font-semibold text-sm">HabitFlow</span>
+                <span class="text-foreground font-semibold text-sm">HabitFlow</span>
               </div>
               <div class="p-3 space-y-1">
-                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-400 border-l-2 border-emerald-500">
-                  <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 border-l-2 border-emerald-500">
+                  <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400"></i>
                   Dashboard
                 </div>
-                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-500">
-                  <i data-lucide="check-square" class="w-3.5 h-3.5 text-zinc-500"></i>
+                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground/50">
+                  <i data-lucide="check-square" class="w-3.5 h-3.5 text-foreground/50"></i>
                   Tracker
                 </div>
-                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-500">
-                  <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-zinc-500"></i>
+                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground/50">
+                  <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-foreground/50"></i>
                   Statistics
                 </div>
-                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-zinc-500">
-                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-zinc-500"></i>
+                <div class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium text-foreground/50">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-foreground/50"></i>
                   Calendar
                 </div>
               </div>
             </div>
             <!-- Main content preview -->
-            <div class="flex-1 p-4 overflow-y-auto bg-[#09090b]/40" id="hero-preview-container">
+            <div class="flex-1 p-4 overflow-y-auto bg-background/50" id="hero-preview-container">
               <!-- Dynamically populated dashboard preview -->
             </div>
           </div>
@@ -175,23 +203,23 @@
   </section>
 
   <!-- ─── Stats Bar ──────────────────────────────────────────── -->
-  <section class="border-y border-zinc-800/50 bg-zinc-900/20 py-10 my-4">
+  <section class="border-y border-card-border bg-card/40 py-10 my-4">
     <div class="max-w-4xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
       <div>
-        <div class="text-3xl font-extrabold text-emerald-400 mb-1">5</div>
-        <div class="text-zinc-500 text-sm font-medium" id="stat-theme-colors">Theme Colors</div>
+        <div class="text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 mb-1">5</div>
+        <div class="text-foreground/60 text-sm font-medium" id="stat-theme-colors">Theme Colors</div>
       </div>
       <div>
-        <div class="text-3xl font-extrabold text-emerald-400 mb-1">∞</div>
-        <div class="text-zinc-500 text-sm font-medium" id="stat-habits">Habits to Track</div>
+        <div class="text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 mb-1">∞</div>
+        <div class="text-foreground/60 text-sm font-medium" id="stat-habits">Habits to Track</div>
       </div>
       <div>
-        <div class="text-3xl font-extrabold text-emerald-400 mb-1">365</div>
-        <div class="text-zinc-500 text-sm font-medium" id="stat-history">Day History</div>
+        <div class="text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 mb-1">365</div>
+        <div class="text-foreground/60 text-sm font-medium" id="stat-history">Day History</div>
       </div>
       <div>
-        <div class="text-3xl font-extrabold text-emerald-400 mb-1">2</div>
-        <div class="text-zinc-500 text-sm font-medium" id="stat-languages">Languages</div>
+        <div class="text-3xl font-extrabold text-emerald-500 dark:text-emerald-400 mb-1">2</div>
+        <div class="text-foreground/60 text-sm font-medium" id="stat-languages">Languages</div>
       </div>
     </div>
   </section>
@@ -199,10 +227,10 @@
   <!-- ─── Features Section ────────────────────────────────────── -->
   <section id="features" class="max-w-7xl mx-auto px-6 py-20 md:py-28">
     <div class="text-center mb-14">
-      <h2 data-i18n="landing.features.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+      <h2 data-i18n="landing.features.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
         Everything you need to grow
       </h2>
-      <p data-i18n="landing.features.subtitle" class="text-zinc-400 text-lg max-w-xl mx-auto">A complete habit tracking system, minimal and powerful.</p>
+      <p data-i18n="landing.features.subtitle" class="text-foreground/60 text-lg max-w-xl mx-auto">A complete habit tracking system, minimal and powerful.</p>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="features-grid">
@@ -213,10 +241,10 @@
   <!-- ─── Preview Section ─────────────────────────────────────── -->
   <section id="preview" class="max-w-7xl mx-auto px-6 py-20 md:py-28">
     <div class="text-center mb-12">
-      <h2 data-i18n="landing.preview.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+      <h2 data-i18n="landing.preview.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
         See it in action
       </h2>
-      <p data-i18n="landing.preview.subtitle" class="text-zinc-400 text-lg max-w-xl mx-auto">Clean, fast, and beautiful — designed to keep you focused on what matters.</p>
+      <p data-i18n="landing.preview.subtitle" class="text-foreground/60 text-lg max-w-xl mx-auto">Clean, fast, and beautiful — designed to keep you focused on what matters.</p>
     </div>
 
     <!-- Tab switcher -->
@@ -227,13 +255,13 @@
     <!-- Preview display -->
     <div class="relative max-w-4xl mx-auto">
       <div class="absolute inset-0 bg-emerald-500/8 rounded-3xl blur-3xl scale-90"></div>
-      <div class="relative rounded-2xl border border-zinc-800/80 bg-[#0f0f11] p-1 shadow-2xl">
+      <div class="relative rounded-2xl border border-card-border bg-card p-1 shadow-2xl">
         <!-- Window chrome -->
-        <div class="flex items-center gap-2 px-4 py-2.5 rounded-t-xl border-b border-zinc-800/60 bg-[#09090b]">
-          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
-          <span class="text-zinc-600 text-[10px] font-medium ml-2" id="preview-url-bar">habitflow.app/dashboard</span>
+        <div class="flex items-center gap-2 px-4 py-2.5 rounded-t-xl border-b border-card-border bg-sidebar">
+          <div class="w-2.5 h-2.5 rounded-full bg-foreground/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-foreground/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-foreground/20"></div>
+          <span class="text-foreground/40 text-[10px] font-medium ml-2" id="preview-url-bar">habitflow.app/dashboard</span>
         </div>
         <div class="p-4" id="preview-viewport">
           <!-- Active Preview Component injected dynamically -->
@@ -250,10 +278,10 @@
 
       <div class="relative">
         <div class="text-5xl mb-5">🚀</div>
-        <h2 data-i18n="landing.cta.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4">
+        <h2 data-i18n="landing.cta.title" class="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
           Ready to build better habits?
         </h2>
-        <p data-i18n="landing.cta.subtitle" class="text-zinc-400 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+        <p data-i18n="landing.cta.subtitle" class="text-foreground/60 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
           Join HabitFlow today — it's free, private, and runs locally on your machine.
         </p>
         <a href="./login.html?tab=register" class="group inline-flex items-center gap-2 px-10 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-lg rounded-2xl transition-all shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]">
@@ -265,23 +293,23 @@
   </section>
 
   <!-- ─── Footer ──────────────────────────────────────────────── -->
-  <footer class="border-t border-zinc-800/50 py-10">
+  <footer class="border-t border-card-border py-10">
     <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2.5">
         <div class="w-7 h-7 rounded-md bg-emerald-500 flex items-center justify-center font-bold text-white text-sm">H</div>
         <div>
-          <span class="font-extrabold text-white text-sm tracking-tight">HabitFlow</span>
-          <p data-i18n="landing.footer.tagline" class="text-zinc-600 text-[11px] font-medium">Your personal growth companion.</p>
+          <span class="font-extrabold text-foreground text-sm tracking-tight">HabitFlow</span>
+          <p data-i18n="landing.footer.tagline" class="text-foreground/50 text-[11px] font-medium">Your personal growth companion.</p>
         </div>
       </div>
-      <p class="text-zinc-600 text-xs font-medium">
+      <p class="text-foreground/50 text-xs font-medium">
         © <span id="current-year">2026</span> HabitFlow. <span data-i18n="landing.footer.rights">All rights reserved.</span>
       </p>
       <!-- Footer language toggles -->
-      <div class="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
-        <i data-lucide="globe" class="w-3 h-3 text-zinc-600 ml-1 mr-0.5"></i>
-        <button onclick="LocaleManager.set('en')" class="px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-all text-zinc-500 hover:text-white" id="footer-lang-en">EN</button>
-        <button onclick="LocaleManager.set('kk')" class="px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-all text-zinc-500 hover:text-white" id="footer-lang-kk">ҚАЗ</button>
+      <div class="flex items-center gap-1 bg-card border border-card-border p-1 rounded-xl shadow-xs">
+        <i data-lucide="globe" class="w-3 h-3 text-foreground/50 ml-1 mr-0.5"></i>
+        <button onclick="LocaleManager.set('en')" class="px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-all text-foreground/60 hover:text-foreground" id="footer-lang-en">EN</button>
+        <button onclick="LocaleManager.set('kk')" class="px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer transition-all text-foreground/60 hover:text-foreground" id="footer-lang-kk">ҚАЗ</button>
       </div>
     </div>
   </footer>
