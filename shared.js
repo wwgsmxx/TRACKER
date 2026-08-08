@@ -16,66 +16,133 @@ const DEFAULT_SETTINGS = {
   colorScheme: 'emerald'
 };
 
-// ─── LocalStorage Database Client ───────────────────────────────────
+// ─── API Client ──────────────────────────────────────────────────────
+// Автоматически определяет адрес сервера (работает и локально и по сети)
+const API_BASE = window.location.origin;
+
+const API = {
+  // Заголовки с JWT токеном
+  _headers() {
+    const token = localStorage.getItem('habitflow_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  },
+
+  async post(path, body) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    return data;
+  },
+
+  async get(path) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'GET',
+      headers: this._headers()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    return data;
+  },
+
+  async put(path, body) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      method: 'PUT',
+      headers: this._headers(),
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Server error');
+    return data;
+  }
+};
+
+// ─── LocalDB — локальный кэш (для скорости и оффлайн режима) ────────
 class LocalDB {
-  static getDB() {
-    let data = localStorage.getItem('habitflow_db');
-    if (!data) {
-      data = { users: {} };
-      localStorage.setItem('habitflow_db', JSON.stringify(data));
-      return data;
-    }
-    return JSON.parse(data);
+  static _cacheKey(email) {
+    return `habitflow_userdata_${email}`;
   }
 
-  static saveDB(db) {
-    localStorage.setItem('habitflow_db', JSON.stringify(db));
-    // Trigger sync events for instant auto-save across tabs
+  static getUserData(email) {
+    const key = (email || '').trim().toLowerCase();
+    const cached = localStorage.getItem(this._cacheKey(key));
+    if (cached) return JSON.parse(cached);
+    // Возвращаем дефолтные данные если нет кэша
+    return this._defaultData(key);
+  }
+
+  static _defaultData(email) {
+    return {
+      email,
+      settings: { ...DEFAULT_SETTINGS },
+      categories: [
+        { id: 'cat-health', name: 'Health & Fitness 🏋️', order: 0, habits: [] },
+        { id: 'cat-mind', name: 'Mind & Learning 📚', order: 1, habits: [] }
+      ],
+      habits: [
+        { id: 'h-water', categoryId: 'cat-health', name: 'Drink Water 💧', order: 0, isPinned: true, isArchived: false },
+        { id: 'h-exercise', categoryId: 'cat-health', name: 'Exercise 🏃', order: 1, isPinned: false, isArchived: false },
+        { id: 'h-reading', categoryId: 'cat-mind', name: 'Read Book 📖', order: 0, isPinned: true, isArchived: false }
+      ],
+      logs: [],
+      notes: {},
+      monthlyGoals: [],
+      yearlyGoals: []
+    };
+  }
+
+  static saveUserData(email, userData) {
+    const key = (email || '').trim().toLowerCase();
+    localStorage.setItem(this._cacheKey(key), JSON.stringify(userData));
     window.dispatchEvent(new CustomEvent('habitflow_data_saved'));
+    // Асинхронно синхронизируем с сервером
+    CloudDB.syncToServer(userData);
   }
 
-  static getUserData(userKey) {
-    const key = (userKey || '').trim().toLowerCase();
-    const db = this.getDB();
-    if (!db.users[key]) {
-      db.users[key] = {
-        email: key,
-        passwordHash: '',
-        settings: { ...DEFAULT_SETTINGS },
-        categories: [
-          { id: 'cat-health', name: 'Health & Fitness 🏋️', order: 0, habits: [] },
-          { id: 'cat-mind', name: 'Mind & Learning 📚', order: 1, habits: [] }
-        ],
-        habits: [
-          { id: 'h-water', categoryId: 'cat-health', name: 'Drink Water 💧', order: 0, isPinned: true, isArchived: false },
-          { id: 'h-exercise', categoryId: 'cat-health', name: 'Exercise 🏃', order: 1, isPinned: false, isArchived: false },
-          { id: 'h-reading', categoryId: 'cat-mind', name: 'Read Book 📖', order: 0, isPinned: true, isArchived: false }
-        ],
-        logs: [],
-        notes: {}, // { "YYYY-MM-DD": "Note content..." }
-        monthlyGoals: [], // [ { id, month: "YYYY-MM", content, completed } ]
-        yearlyGoals: [] // [ { id, year: YYYY, content, completed } ]
-      };
-      this.saveDB(db);
+  static clearCache(email) {
+    const key = (email || '').trim().toLowerCase();
+    localStorage.removeItem(this._cacheKey(key));
+  }
+}
+
+// ─── CloudDB — синхронизация с сервером ─────────────────────────────
+const CloudDB = {
+  _syncTimer: null,
+
+  // Загрузить данные с сервера (при логине)
+  async loadFromServer() {
+    try {
+      const data = await API.get('/api/data');
+      const email = (data.email || '').trim().toLowerCase();
+      if (email) {
+        localStorage.setItem(LocalDB._cacheKey(email), JSON.stringify(data));
+      }
+      return data;
+    } catch (e) {
+      console.warn('CloudDB: не удалось загрузить данные с сервера, используется локальный кэш');
+      return null;
     }
-    return db.users[key];
-  }
+  },
 
-  static saveUserData(userKey, userData) {
-    const key = (userKey || '').trim().toLowerCase();
-    const db = this.getDB();
-    db.users[key] = userData;
-    this.saveDB(db);
+  // Сохранить данные на сервер (дебаунс 500ms чтобы не спамить)
+  syncToServer(userData) {
+    clearTimeout(this._syncTimer);
+    this._syncTimer = setTimeout(async () => {
+      try {
+        await API.put('/api/data', userData);
+        // Показываем статус "Сохранено"
+        window.dispatchEvent(new CustomEvent('habitflow_cloud_saved'));
+      } catch (e) {
+        console.warn('CloudDB: не удалось синхронизировать с сервером:', e.message);
+      }
+    }, 500);
   }
-}
-
-// ─── Simple Client Cryptography Helper ─────────────────────────────
-async function hashPassword(password) {
-  const msgBuffer = new TextEncoder().encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+};
 
 // Helper to validate email format
 function isValidEmail(email) {
@@ -91,17 +158,17 @@ const Auth = {
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
     if (password.length < 6) throw new Error('passwordTooShort');
 
-    const db = LocalDB.getDB();
-    if (db.users[trimmed]) throw new Error('emailTaken');
+    // Регистрируем через сервер
+    const result = await API.post('/api/auth/register', { email: trimmed, password });
 
-    const passwordHash = await hashPassword(password);
-    const userData = LocalDB.getUserData(trimmed);
-    userData.email = trimmed;
-    userData.passwordHash = passwordHash;
-    LocalDB.saveUserData(trimmed, userData);
+    // Сохраняем токен и сессию
+    localStorage.setItem('habitflow_token', result.token);
+    this.setSession(result.email);
 
-    this.setSession(trimmed);
-    return trimmed;
+    // Загружаем данные с сервера в кэш
+    await CloudDB.loadFromServer();
+
+    return result.email;
   },
 
   async login(email, password) {
@@ -109,41 +176,41 @@ const Auth = {
     if (!trimmed || !password) throw new Error('fillAll');
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
 
-    const db = LocalDB.getDB();
-    if (!db.users[trimmed]) throw new Error('invalidCredentials');
+    // Логинимся через сервер
+    const result = await API.post('/api/auth/login', { email: trimmed, password });
 
-    const passwordHash = await hashPassword(password);
-    if (db.users[trimmed].passwordHash !== passwordHash) {
-      throw new Error('invalidCredentials');
-    }
+    // Сохраняем токен и сессию
+    localStorage.setItem('habitflow_token', result.token);
+    this.setSession(result.email);
 
-    this.setSession(trimmed);
-    return trimmed;
+    // Загружаем свежие данные с сервера (перезаписывает локальный кэш)
+    await CloudDB.loadFromServer();
+
+    return result.email;
   },
 
   logout() {
+    const email = this.getCurrentUser();
+    if (email) LocalDB.clearCache(email);
     localStorage.removeItem('habitflow_session');
+    localStorage.removeItem('habitflow_token');
     window.location.href = './login.html';
   },
 
   setSession(email) {
-    localStorage.setItem('habitflow_session', JSON.stringify({ username: email, email, loginTime: Date.now() }));
+    localStorage.setItem('habitflow_session', JSON.stringify({ email, loginTime: Date.now() }));
   },
 
   getCurrentUser() {
     const sessionStr = localStorage.getItem('habitflow_session');
-    if (!sessionStr) return null;
+    const token = localStorage.getItem('habitflow_token');
+    if (!sessionStr || !token) return null;
     try {
       const session = JSON.parse(sessionStr);
-      const userKey = (session.email || session.username || '').trim().toLowerCase();
-      const db = LocalDB.getDB();
-      if (db.users[userKey]) {
-        return userKey;
-      }
+      return (session.email || '').trim().toLowerCase() || null;
     } catch (e) {
       return null;
     }
-    return null;
   },
 
   checkAuth(isProtectedRoute) {
@@ -720,12 +787,12 @@ const UILayout = {
             </div>
           </div>
 
-          <!-- Sync Badge -->
-          <div class="flex items-center justify-between px-3 py-2 bg-card-border/20 rounded-lg text-xs">
+          <!-- Sync Badge (dynamic cloud status) -->
+          <div id="sync-status-badge" class="flex items-center justify-between px-3 py-2 bg-card-border/20 rounded-lg text-xs">
             <span class="text-foreground/50 font-medium">${t('nav.syncStatus')}</span>
             <div class="flex items-center gap-1.5 font-medium text-emerald-500">
               <i data-lucide="cloud" class="w-3.5 h-3.5"></i>
-              <span>${t('nav.saved')}</span>
+              <span id="sync-status-text">${t('nav.saved')}</span>
             </div>
           </div>
 
@@ -799,16 +866,39 @@ window.addEventListener('localeChanged', () => {
     ThemeManager.apply(theme, 'emerald');
   }
 
-  // Cross-tab and window instant auto-save synchronization listener
+  // Cross-tab synchronization listener (localStorage cache updates)
   window.addEventListener('storage', (e) => {
-    if (e.key === 'habitflow_db' || e.key === 'habitflow_theme') {
+    if (e.key === 'habitflow_theme') {
       const activeUser = Auth.getCurrentUser();
       if (activeUser) {
         ThemeManager.load(activeUser);
       } else {
         ThemeManager.apply(ThemeManager.getTheme(), 'emerald');
       }
+    }
+    if (e.key && e.key.startsWith('habitflow_userdata_')) {
       window.dispatchEvent(new CustomEvent('habitflow_sync'));
     }
+  });
+
+  // Cloud save indicator: show "Syncing..." → "Saved ☁️" in sidebar
+  window.addEventListener('habitflow_data_saved', () => {
+    const badge = document.getElementById('sync-status-badge');
+    const txt = document.getElementById('sync-status-text');
+    if (!badge || !txt) return;
+    const locale = LocaleManager.get();
+    txt.textContent = TRANSLATIONS[locale].nav.syncing || 'Syncing...';
+    badge.querySelector('i')?.setAttribute('data-lucide', 'loader');
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  window.addEventListener('habitflow_cloud_saved', () => {
+    const badge = document.getElementById('sync-status-badge');
+    const txt = document.getElementById('sync-status-text');
+    if (!badge || !txt) return;
+    const locale = LocaleManager.get();
+    txt.textContent = TRANSLATIONS[locale].nav.saved || 'Saved';
+    badge.querySelector('i')?.setAttribute('data-lucide', 'cloud');
+    if (window.lucide) window.lucide.createIcons();
   });
 })();
