@@ -16,51 +16,7 @@ const DEFAULT_SETTINGS = {
   colorScheme: 'emerald'
 };
 
-// ─── API Client ──────────────────────────────────────────────────────
-// Автоматически определяет адрес сервера (работает и локально и по сети)
-const API_BASE = window.location.origin;
-
-const API = {
-  // Заголовки с JWT токеном
-  _headers() {
-    const token = localStorage.getItem('habitflow_token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    return headers;
-  },
-
-  async post(path, body) {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: 'POST',
-      headers: this._headers(),
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Server error');
-    return data;
-  },
-
-  async get(path) {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: 'GET',
-      headers: this._headers()
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Server error');
-    return data;
-  },
-
-  async put(path, body) {
-    const res = await fetch(`${API_BASE}${path}`, {
-      method: 'PUT',
-      headers: this._headers(),
-      body: JSON.stringify(body)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Server error');
-    return data;
-  }
-};
+// ─── API Client Legacy Cleaned ──────────────────────────────────────
 
 // ─── LocalDB — локальный кэш UI и сессии ──────────────────────────────
 class LocalDB {
@@ -115,12 +71,13 @@ const CloudDB = {
   _syncTimer: null,
 
   async loadFromServer() {
-    if (!window.supabaseClient) {
+    const client = window.getSupabaseClient ? window.getSupabaseClient() : window.supabaseClient;
+    if (!client) {
       console.warn('CloudDB: Supabase Client не инициализирован');
       return null;
     }
     try {
-      const { data: { user }, error: userError } = await window.supabaseClient.auth.getUser();
+      const { data: { user }, error: userError } = await client.auth.getUser();
       if (userError || !user) return null;
 
       const userId = user.id;
@@ -136,13 +93,13 @@ const CloudDB = {
         { data: mGoalsData },
         { data: yGoalsData }
       ] = await Promise.all([
-        window.supabaseClient.from('user_settings').select('*').eq('user_id', userId).single(),
-        window.supabaseClient.from('categories').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
-        window.supabaseClient.from('habits').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
-        window.supabaseClient.from('habit_logs').select('*').eq('user_id', userId),
-        window.supabaseClient.from('daily_notes').select('*').eq('user_id', userId),
-        window.supabaseClient.from('monthly_goals').select('*').eq('user_id', userId),
-        window.supabaseClient.from('yearly_goals').select('*').eq('user_id', userId)
+        client.from('user_settings').select('*').eq('user_id', userId).single(),
+        client.from('categories').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
+        client.from('habits').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
+        client.from('habit_logs').select('*').eq('user_id', userId),
+        client.from('daily_notes').select('*').eq('user_id', userId),
+        client.from('monthly_goals').select('*').eq('user_id', userId),
+        client.from('yearly_goals').select('*').eq('user_id', userId)
       ]);
 
       const formattedSettings = settingsData ? {
@@ -214,15 +171,16 @@ const CloudDB = {
   syncToServer(userData) {
     clearTimeout(this._syncTimer);
     this._syncTimer = setTimeout(async () => {
-      if (!window.supabaseClient) return;
+      const client = window.getSupabaseClient ? window.getSupabaseClient() : window.supabaseClient;
+      if (!client) return;
       try {
-        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        const { data: { user } } = await client.auth.getUser();
         if (!user) return;
         const userId = user.id;
 
         // 1. Settings
         if (userData.settings) {
-          await window.supabaseClient.from('user_settings').upsert({
+          await client.from('user_settings').upsert({
             user_id: userId,
             theme: userData.settings.theme || 'dark',
             color_scheme: userData.settings.colorScheme || 'emerald',
@@ -239,7 +197,7 @@ const CloudDB = {
             sort_order: c.order || 0
           }));
           if (catRows.length > 0) {
-            await window.supabaseClient.from('categories').upsert(catRows);
+            await client.from('categories').upsert(catRows);
           }
         }
 
@@ -255,7 +213,7 @@ const CloudDB = {
             is_archived: !!h.isArchived
           }));
           if (habitRows.length > 0) {
-            await window.supabaseClient.from('habits').upsert(habitRows);
+            await client.from('habits').upsert(habitRows);
           }
         }
 
@@ -269,7 +227,7 @@ const CloudDB = {
             updated_at: new Date().toISOString()
           }));
           if (logRows.length > 0) {
-            await window.supabaseClient.from('habit_logs').upsert(logRows);
+            await client.from('habit_logs').upsert(logRows);
           }
         }
 
@@ -282,7 +240,7 @@ const CloudDB = {
             updated_at: new Date().toISOString()
           }));
           if (noteRows.length > 0) {
-            await window.supabaseClient.from('daily_notes').upsert(noteRows);
+            await client.from('daily_notes').upsert(noteRows);
           }
         }
 
@@ -296,7 +254,7 @@ const CloudDB = {
             completed: !!g.completed
           }));
           if (mGoalRows.length > 0) {
-            await window.supabaseClient.from('monthly_goals').upsert(mGoalRows);
+            await client.from('monthly_goals').upsert(mGoalRows);
           }
         }
 
@@ -310,7 +268,7 @@ const CloudDB = {
             completed: !!g.completed
           }));
           if (yGoalRows.length > 0) {
-            await window.supabaseClient.from('yearly_goals').upsert(yGoalRows);
+            await client.from('yearly_goals').upsert(yGoalRows);
           }
         }
 
@@ -336,9 +294,10 @@ const Auth = {
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
     if (password.length < 6) throw new Error('passwordTooShort');
 
-    if (!window.supabaseClient) throw new Error('Supabase client is not ready');
+    const client = window.getSupabaseClient ? window.getSupabaseClient() : window.supabaseClient;
+    if (!client) throw new Error('Supabase client is not ready');
 
-    const { data, error } = await window.supabaseClient.auth.signUp({
+    const { data, error } = await client.auth.signUp({
       email: trimmed,
       password: password
     });
@@ -363,15 +322,23 @@ const Auth = {
     if (!trimmed || !password) throw new Error('fillAll');
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
 
-    if (!window.supabaseClient) throw new Error('Supabase client is not ready');
+    const client = window.getSupabaseClient ? window.getSupabaseClient() : window.supabaseClient;
+    if (!client) throw new Error('Supabase client is not ready');
 
-    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+    const { data, error } = await client.auth.signInWithPassword({
       email: trimmed,
       password: password
     });
 
     if (error) {
-      throw new Error('invalidCredentials');
+      console.error('Supabase Auth error:', error.message);
+      if (error.message.includes('Invalid login credentials')) {
+        throw new Error('invalidCredentials');
+      }
+      if (error.message.includes('Email not confirmed')) {
+        throw new Error('Email не подтвержден! Пожалуйста, проверьте почту или отключите Email Confirmation в Supabase Dashboard -> Authentication -> Providers -> Email');
+      }
+      throw new Error(error.message);
     }
 
     if (data.user) {
