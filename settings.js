@@ -17,6 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // States
   let userData = LocalDB.getUserData(username);
 
+  // Sync fresh data from Supabase
+  CloudDB.loadFromServer().then(freshData => {
+    if (freshData) {
+      userData = freshData;
+      updateIndicators();
+    }
+  });
+
   // DOM Elements
   const usernameDisplay = document.getElementById('settings-username-display');
   const btnThemeDark = document.getElementById('btn-theme-dark');

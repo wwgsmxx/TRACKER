@@ -62,17 +62,18 @@ const API = {
   }
 };
 
-// ─── LocalDB — локальный кэш (для скорости и оффлайн режима) ────────
+// ─── LocalDB — локальный кэш UI и сессии ──────────────────────────────
 class LocalDB {
   static _cacheKey(email) {
-    return `habitflow_userdata_${email}`;
+    return `habitflow_userdata_${(email || '').trim().toLowerCase()}`;
   }
 
   static getUserData(email) {
     const key = (email || '').trim().toLowerCase();
     const cached = localStorage.getItem(this._cacheKey(key));
-    if (cached) return JSON.parse(cached);
-    // Возвращаем дефолтные данные если нет кэша
+    if (cached) {
+      try { return JSON.parse(cached); } catch(e) {}
+    }
     return this._defaultData(key);
   }
 
@@ -100,7 +101,6 @@ class LocalDB {
     const key = (email || '').trim().toLowerCase();
     localStorage.setItem(this._cacheKey(key), JSON.stringify(userData));
     window.dispatchEvent(new CustomEvent('habitflow_data_saved'));
-    // Асинхронно синхронизируем с сервером
     CloudDB.syncToServer(userData);
   }
 
@@ -110,35 +110,213 @@ class LocalDB {
   }
 }
 
-// ─── CloudDB — синхронизация с сервером ─────────────────────────────
+// ─── CloudDB — синхронизация с Supabase Database ───────────────────────
 const CloudDB = {
   _syncTimer: null,
 
-  // Загрузить данные с сервера (при логине)
   async loadFromServer() {
+    if (!window.supabaseClient) {
+      console.warn('CloudDB: Supabase Client не инициализирован');
+      return null;
+    }
     try {
-      const data = await API.get('/api/data');
-      const email = (data.email || '').trim().toLowerCase();
-      if (email) {
-        localStorage.setItem(LocalDB._cacheKey(email), JSON.stringify(data));
-      }
-      return data;
+      const { data: { user }, error: userError } = await window.supabaseClient.auth.getUser();
+      if (userError || !user) return null;
+
+      const userId = user.id;
+      const email = user.email;
+
+      // Загружаем все сущности параллельно
+      const [
+        { data: settingsData },
+        { data: categoriesData },
+        { data: habitsData },
+        { data: logsData },
+        { data: notesData },
+        { data: mGoalsData },
+        { data: yGoalsData }
+      ] = await Promise.all([
+        window.supabaseClient.from('user_settings').select('*').eq('user_id', userId).single(),
+        window.supabaseClient.from('categories').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
+        window.supabaseClient.from('habits').select('*').eq('user_id', userId).order('sort_order', { ascending: true }),
+        window.supabaseClient.from('habit_logs').select('*').eq('user_id', userId),
+        window.supabaseClient.from('daily_notes').select('*').eq('user_id', userId),
+        window.supabaseClient.from('monthly_goals').select('*').eq('user_id', userId),
+        window.supabaseClient.from('yearly_goals').select('*').eq('user_id', userId)
+      ]);
+
+      const formattedSettings = settingsData ? {
+        theme: settingsData.theme || 'dark',
+        colorScheme: settingsData.color_scheme || 'emerald'
+      } : { ...DEFAULT_SETTINGS };
+
+      const formattedCategories = (categoriesData || []).map(c => ({
+        id: c.id,
+        name: c.name,
+        order: c.sort_order || 0
+      }));
+
+      const formattedHabits = (habitsData || []).map(h => ({
+        id: h.id,
+        categoryId: h.category_id,
+        name: h.name,
+        order: h.sort_order || 0,
+        isPinned: h.is_pinned || false,
+        isArchived: h.is_archived || false
+      }));
+
+      const formattedLogs = (logsData || []).map(l => ({
+        habitId: l.habit_id,
+        date: l.log_date,
+        completed: l.completed
+      }));
+
+      const formattedNotes = {};
+      (notesData || []).forEach(n => {
+        formattedNotes[n.note_date] = n.content;
+      });
+
+      const formattedMonthlyGoals = (mGoalsData || []).map(g => ({
+        id: g.id,
+        month: g.month_str,
+        content: g.content,
+        completed: g.completed
+      }));
+
+      const formattedYearlyGoals = (yGoalsData || []).map(g => ({
+        id: g.id,
+        year: g.year_str,
+        content: g.content,
+        completed: g.completed
+      }));
+
+      const userData = {
+        email,
+        settings: formattedSettings,
+        categories: formattedCategories,
+        habits: formattedHabits,
+        logs: formattedLogs,
+        notes: formattedNotes,
+        monthlyGoals: formattedMonthlyGoals,
+        yearlyGoals: formattedYearlyGoals
+      };
+
+      // Сохраняем свежие данные в локальный кэш
+      localStorage.setItem(LocalDB._cacheKey(email), JSON.stringify(userData));
+      return userData;
+
     } catch (e) {
-      console.warn('CloudDB: не удалось загрузить данные с сервера, используется локальный кэш');
+      console.warn('CloudDB: Ошибка при загрузке из Supabase:', e);
       return null;
     }
   },
 
-  // Сохранить данные на сервер (дебаунс 500ms чтобы не спамить)
   syncToServer(userData) {
     clearTimeout(this._syncTimer);
     this._syncTimer = setTimeout(async () => {
+      if (!window.supabaseClient) return;
       try {
-        await API.put('/api/data', userData);
-        // Показываем статус "Сохранено"
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) return;
+        const userId = user.id;
+
+        // 1. Settings
+        if (userData.settings) {
+          await window.supabaseClient.from('user_settings').upsert({
+            user_id: userId,
+            theme: userData.settings.theme || 'dark',
+            color_scheme: userData.settings.colorScheme || 'emerald',
+            updated_at: new Date().toISOString()
+          });
+        }
+
+        // 2. Categories
+        if (userData.categories) {
+          const catRows = userData.categories.map(c => ({
+            id: c.id,
+            user_id: userId,
+            name: c.name,
+            sort_order: c.order || 0
+          }));
+          if (catRows.length > 0) {
+            await window.supabaseClient.from('categories').upsert(catRows);
+          }
+        }
+
+        // 3. Habits
+        if (userData.habits) {
+          const habitRows = userData.habits.map(h => ({
+            id: h.id,
+            user_id: userId,
+            category_id: h.categoryId,
+            name: h.name,
+            sort_order: h.order || 0,
+            is_pinned: !!h.isPinned,
+            is_archived: !!h.isArchived
+          }));
+          if (habitRows.length > 0) {
+            await window.supabaseClient.from('habits').upsert(habitRows);
+          }
+        }
+
+        // 4. Logs
+        if (userData.logs) {
+          const logRows = userData.logs.map(l => ({
+            user_id: userId,
+            habit_id: l.habitId,
+            log_date: l.date,
+            completed: !!l.completed,
+            updated_at: new Date().toISOString()
+          }));
+          if (logRows.length > 0) {
+            await window.supabaseClient.from('habit_logs').upsert(logRows);
+          }
+        }
+
+        // 5. Notes
+        if (userData.notes) {
+          const noteRows = Object.keys(userData.notes).map(dateKey => ({
+            user_id: userId,
+            note_date: dateKey,
+            content: userData.notes[dateKey] || '',
+            updated_at: new Date().toISOString()
+          }));
+          if (noteRows.length > 0) {
+            await window.supabaseClient.from('daily_notes').upsert(noteRows);
+          }
+        }
+
+        // 6. Monthly Goals
+        if (userData.monthlyGoals) {
+          const mGoalRows = userData.monthlyGoals.map(g => ({
+            id: g.id,
+            user_id: userId,
+            month_str: g.month,
+            content: g.content,
+            completed: !!g.completed
+          }));
+          if (mGoalRows.length > 0) {
+            await window.supabaseClient.from('monthly_goals').upsert(mGoalRows);
+          }
+        }
+
+        // 7. Yearly Goals
+        if (userData.yearlyGoals) {
+          const yGoalRows = userData.yearlyGoals.map(g => ({
+            id: g.id,
+            user_id: userId,
+            year_str: String(g.year),
+            content: g.content,
+            completed: !!g.completed
+          }));
+          if (yGoalRows.length > 0) {
+            await window.supabaseClient.from('yearly_goals').upsert(yGoalRows);
+          }
+        }
+
         window.dispatchEvent(new CustomEvent('habitflow_cloud_saved'));
       } catch (e) {
-        console.warn('CloudDB: не удалось синхронизировать с сервером:', e.message);
+        console.warn('CloudDB: Не удалось синхронизировать с Supabase:', e.message);
       }
     }, 500);
   }
@@ -150,7 +328,7 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
-// ─── Auth System Module ─────────────────────────────────────────────
+// ─── Auth System Module (Supabase Auth) ───────────────────────────────
 const Auth = {
   async register(email, password) {
     const trimmed = (email || '').trim().toLowerCase();
@@ -158,17 +336,26 @@ const Auth = {
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
     if (password.length < 6) throw new Error('passwordTooShort');
 
-    // Регистрируем через сервер
-    const result = await API.post('/api/auth/register', { email: trimmed, password });
+    if (!window.supabaseClient) throw new Error('Supabase client is not ready');
 
-    // Сохраняем токен и сессию
-    localStorage.setItem('habitflow_token', result.token);
-    this.setSession(result.email);
+    const { data, error } = await window.supabaseClient.auth.signUp({
+      email: trimmed,
+      password: password
+    });
 
-    // Загружаем данные с сервера в кэш
-    await CloudDB.loadFromServer();
+    if (error) {
+      if (error.message.includes('already registered')) throw new Error('emailTaken');
+      throw new Error(error.message);
+    }
 
-    return result.email;
+    if (data.user) {
+      this.setSession(data.user.email);
+      // Если у нас были дефолтные/старые локальные данные, инициализируем базу Supabase
+      const defaultData = LocalDB.getUserData(trimmed);
+      CloudDB.syncToServer(defaultData);
+    }
+
+    return trimmed;
   },
 
   async login(email, password) {
@@ -176,24 +363,35 @@ const Auth = {
     if (!trimmed || !password) throw new Error('fillAll');
     if (!isValidEmail(trimmed)) throw new Error('invalidEmail');
 
-    // Логинимся через сервер
-    const result = await API.post('/api/auth/login', { email: trimmed, password });
+    if (!window.supabaseClient) throw new Error('Supabase client is not ready');
 
-    // Сохраняем токен и сессию
-    localStorage.setItem('habitflow_token', result.token);
-    this.setSession(result.email);
+    const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+      email: trimmed,
+      password: password
+    });
 
-    // Загружаем свежие данные с сервера (перезаписывает локальный кэш)
-    await CloudDB.loadFromServer();
+    if (error) {
+      throw new Error('invalidCredentials');
+    }
 
-    return result.email;
+    if (data.user) {
+      this.setSession(data.user.email);
+      // Загружаем актуальный прогресс пользователя с сервера
+      await CloudDB.loadFromServer();
+    }
+
+    return trimmed;
   },
 
-  logout() {
+  async logout() {
     const email = this.getCurrentUser();
     if (email) LocalDB.clearCache(email);
     localStorage.removeItem('habitflow_session');
-    localStorage.removeItem('habitflow_token');
+
+    if (window.supabaseClient) {
+      await window.supabaseClient.auth.signOut();
+    }
+
     window.location.href = './login.html';
   },
 
@@ -203,8 +401,7 @@ const Auth = {
 
   getCurrentUser() {
     const sessionStr = localStorage.getItem('habitflow_session');
-    const token = localStorage.getItem('habitflow_token');
-    if (!sessionStr || !token) return null;
+    if (!sessionStr) return null;
     try {
       const session = JSON.parse(sessionStr);
       return (session.email || '').trim().toLowerCase() || null;
@@ -215,7 +412,7 @@ const Auth = {
 
   checkAuth(isProtectedRoute) {
     const user = this.getCurrentUser();
-    const currentFile = window.location.pathname.split('/').pop();
+    const currentFile = window.location.pathname.split('/').pop() || 'index.html';
 
     if (isProtectedRoute && !user) {
       window.location.href = './login.html';

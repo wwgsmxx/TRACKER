@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // States
   let userData = LocalDB.getUserData(username);
+
+  // Sync fresh data from Supabase
+  CloudDB.loadFromServer().then(freshData => {
+    if (freshData) {
+      userData = freshData;
+      renderCalendar();
+      renderDayDetails();
+    }
+  });
   let currentMonthDate = new Date();
   
   // Default selected date: today (local YYYY-MM-DD)

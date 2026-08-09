@@ -31,6 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // States
   let userData = LocalDB.getUserData(username);
+
+  // Sync fresh data from Supabase
+  CloudDB.loadFromServer().then(freshData => {
+    if (freshData) {
+      userData = freshData;
+      renderGrid();
+    }
+  });
   let currentDate = new Date();
   let searchQuery = '';
   

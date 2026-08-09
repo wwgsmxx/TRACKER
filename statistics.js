@@ -85,7 +85,15 @@ document.addEventListener('DOMContentLoaded', () => {
   UILayout.inject(username);
 
   // States
-  const userData = LocalDB.getUserData(username);
+  let userData = LocalDB.getUserData(username);
+
+  // Sync fresh data from Supabase
+  CloudDB.loadFromServer().then(freshData => {
+    if (freshData) {
+      userData = freshData;
+      renderAll();
+    }
+  });
   const todayStr = new Date().toISOString().substring(0, 10);
   const currentYear = new Date().getFullYear();
   

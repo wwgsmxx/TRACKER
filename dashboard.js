@@ -97,7 +97,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentMonthIdx = today.getMonth();
 
   // Load User Data
-  const userData = LocalDB.getUserData(username);
+  let userData = LocalDB.getUserData(username);
+
+  // Sync fresh data from Supabase
+  CloudDB.loadFromServer().then(freshData => {
+    if (freshData) {
+      userData = freshData;
+      updateMetrics();
+      renderGoals();
+    }
+  });
 
   // Translate Date Badge
   function updateDateBadge() {
